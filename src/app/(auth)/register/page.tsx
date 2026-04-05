@@ -49,6 +49,7 @@ export default function RegisterPage() {
           data: {
             nickname: nickname || null,
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

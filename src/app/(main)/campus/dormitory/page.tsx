@@ -188,45 +188,43 @@ export default function DormitoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg min-h-screen bg-purple-50/30 animate-scene-fade-in">
+    <div className="mx-auto max-w-lg min-h-screen bg-[var(--scene-dorm-bg)] animate-scene-fade-in">
       {/* 进入提示 */}
       {showEntryToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-scene-toast">
-          <div className="bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+          <div className="bg-[var(--scene-dorm)] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
             已进入宿舍
           </div>
         </div>
       )}
 
       {/* 顶部氛围区 */}
-      <div className="bg-gradient-to-b from-purple-600 to-purple-800 px-4 pt-12 pb-8 text-white">
+      <div className="bg-gradient-to-b from-[var(--scene-dorm)] to-[var(--scene-dorm)] px-4 pt-12 pb-8 text-white">
         <h1 className="text-2xl font-bold mb-1">🌙 宿舍</h1>
-        <p className="text-purple-100 text-sm">{getDormitorySubtitle()}</p>
+        <p className="text-white/70 text-sm">{getDormitorySubtitle()}</p>
       </div>
 
       {/* 内容区域 */}
       <div className="px-4 py-4 pb-24 space-y-4">
         {/* 状态展示区 */}
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="rounded-xl shadow-sm p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
           <div className="flex flex-col items-center gap-3 py-4">
             <div className="text-6xl">🌙</div>
-            <div className="text-2xl font-mono font-bold text-[#7C3AED]">
+            <div className="text-2xl font-mono font-bold text-[var(--scene-dorm)]">
               {currentTime}
             </div>
             <p
-              className={`text-sm font-medium px-3 py-1 rounded-full ${
-                timeInfo.level === 'gold'
-                  ? 'bg-green-100 text-green-700'
-                  : timeInfo.level === 'warning'
-                  ? 'bg-yellow-100 text-yellow-700'
-                  : 'bg-red-100 text-red-600'
-              }`}
+              className="text-sm font-medium px-3 py-1 rounded-full"
+              style={{
+                backgroundColor: timeInfo.level === 'gold' ? 'var(--success-light)' : timeInfo.level === 'warning' ? 'var(--accent-light)' : 'var(--accent-light)',
+                color: timeInfo.level === 'gold' ? 'var(--success)' : timeInfo.level === 'warning' ? 'var(--accent-color)' : 'var(--danger)',
+              }}
             >
               {timeInfo.text}
             </p>
             {todayState.streak > 0 && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <TrendingUp className="size-4 text-[#7C3AED]" />
+                <TrendingUp className="size-4 text-[var(--scene-dorm)]" />
                 连续早睡 {todayState.streak} 天
               </div>
             )}
@@ -237,7 +235,7 @@ export default function DormitoryPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Star className="size-4 text-[#7C3AED]" />
+              <Star className="size-4 text-[var(--scene-dorm)]" />
               积分规则
             </CardTitle>
           </CardHeader>
@@ -246,7 +244,7 @@ export default function DormitoryPage() {
               <div
                 className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
                   currentPoints === 15
-                    ? 'bg-[#7C3AED]/10 border border-[#7C3AED]/30 font-semibold text-[#7C3AED]'
+                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
                     : 'bg-muted'
                 }`}
               >
@@ -256,7 +254,7 @@ export default function DormitoryPage() {
               <div
                 className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
                   currentPoints === 8
-                    ? 'bg-[#7C3AED]/10 border border-[#7C3AED]/30 font-semibold text-[#7C3AED]'
+                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
                     : 'bg-muted'
                 }`}
               >
@@ -266,7 +264,7 @@ export default function DormitoryPage() {
               <div
                 className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
                   currentPoints === 0
-                    ? 'bg-[#7C3AED]/10 border border-[#7C3AED]/30 font-semibold text-[#7C3AED]'
+                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
                     : 'bg-muted'
                 }`}
               >
@@ -281,7 +279,7 @@ export default function DormitoryPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="size-4 text-[#7C3AED]" />
+              <Clock className="size-4 text-[var(--scene-dorm)]" />
               {todayState.status === 'idle'
                 ? '晚安打卡'
                 : todayState.status === 'sleeping'
@@ -300,13 +298,13 @@ export default function DormitoryPage() {
                     type="time"
                     value={sleepTime}
                     onChange={(e) => setSleepTime(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED] focus-visible:ring-offset-2"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--scene-dorm)] focus-visible:ring-offset-2"
                   />
                 </div>
                 <Button
                   onClick={handleSleepCheckin}
                   disabled={submitting}
-                  className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white"
+                  className="w-full bg-[var(--scene-dorm)] hover:bg-[var(--scene-dorm)] text-white"
                 >
                   {submitting ? (
                     <>
@@ -323,7 +321,7 @@ export default function DormitoryPage() {
             {todayState.status === 'sleeping' && todayState.log && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Moon className="size-4 text-[#7C3AED]" />
+                  <Moon className="size-4 text-[var(--scene-dorm)]" />
                   昨晚入睡时间：{todayState.log.sleep_time}
                 </div>
                 <div>
@@ -334,13 +332,13 @@ export default function DormitoryPage() {
                     type="time"
                     value={wakeTime}
                     onChange={(e) => setWakeTime(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED] focus-visible:ring-offset-2"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--scene-dorm)] focus-visible:ring-offset-2"
                   />
                 </div>
                 <Button
                   onClick={handleWakeUp}
                   disabled={submitting}
-                  className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white"
+                  className="w-full bg-[var(--scene-dorm)] hover:bg-[var(--scene-dorm)] text-white"
                 >
                   {submitting ? (
                     <>
@@ -366,11 +364,11 @@ export default function DormitoryPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">获得积分</span>
-                  <span className="font-bold text-[#7C3AED]">
+                  <span className="font-bold text-[var(--scene-dorm)]">
                     +{todayState.log.points_earned} 积分
                   </span>
                 </div>
-                <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-center text-sm text-green-700 font-medium">
+                <div className="rounded-lg px-3 py-2 text-center text-sm font-medium" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)' }}>
                   今日已完成打卡
                 </div>
               </div>
@@ -403,15 +401,16 @@ export default function DormitoryPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="size-3.5 text-yellow-500" />
+                      <Star className="size-3.5" style={{ color: 'var(--points-color)' }} />
                       <span
-                        className={`font-bold ${
-                          log.points_earned >= 15
-                            ? 'text-green-600'
+                        className="font-bold"
+                        style={{
+                          color: log.points_earned >= 15
+                            ? 'var(--success)'
                             : log.points_earned >= 8
-                            ? 'text-yellow-600'
-                            : 'text-muted-foreground'
-                        }`}
+                            ? 'var(--accent-color)'
+                            : 'var(--text-muted)',
+                        }}
                       >
                         +{log.points_earned}
                       </span>
@@ -425,11 +424,12 @@ export default function DormitoryPage() {
       </div>
 
       {/* 底部固定离开按钮 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-100 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t px-4 py-3" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)', borderColor: 'var(--border-color)' }}>
         <div className="mx-auto max-w-lg">
           <Button
             variant="outline"
-            className="w-full text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+            className="w-full"
+            style={{ color: 'var(--danger)', borderColor: 'var(--border-color)' }}
             onClick={handleLeave}
           >
             <LogOut className="size-4 mr-2" />

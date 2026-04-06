@@ -38,6 +38,7 @@ import {
   BarChart3,
   CalendarDays,
   Settings,
+  Palette,
   HelpCircle,
   LogOut,
   Loader2,
@@ -142,7 +143,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-[#1E40AF]" />
+        <Loader2 className="size-8 animate-spin text-[var(--accent)]" />
       </div>
     )
   }
@@ -162,7 +163,7 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
       {/* 用户信息卡片 */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-[#1E40AF] to-[#1E3A8A] px-4 pt-6 pb-8 text-white">
+        <div className="bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] px-4 pt-6 pb-8 text-white">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="size-16 ring-2 ring-white/30">
@@ -216,7 +217,7 @@ export default function ProfilePage() {
                   <Button
                     onClick={handleSaveNickname}
                     disabled={saving}
-                    className="bg-[#1E40AF] hover:bg-[#1E3A8A]"
+                    className="bg-[var(--accent)] hover:bg-[var(--accent-hover)]"
                   >
                     {saving && <Loader2 className="size-4 animate-spin" />}
                     保存
@@ -229,7 +230,7 @@ export default function ProfilePage() {
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge className="bg-[#F97316] text-white border-0">
+              <Badge className="text-white border-0" style={{ backgroundColor: 'var(--accent-color)' }}>
                 Lv.{profile.current_level}
               </Badge>
               <span className="text-sm text-muted-foreground">
@@ -244,10 +245,13 @@ export default function ProfilePage() {
       <div className="grid grid-cols-3 gap-3">
         <Card size="sm">
           <CardContent className="flex flex-col items-center gap-1 py-2">
-            <div className="flex items-center justify-center size-9 rounded-full bg-yellow-100">
-              <Star className="size-5 text-yellow-500" />
+            <div
+              className="flex items-center justify-center size-9 rounded-full"
+              style={{ backgroundColor: 'var(--points-bg)' }}
+            >
+              <Star className="size-5" style={{ color: 'var(--points-color)' }} />
             </div>
-            <span className="text-lg font-bold text-yellow-600">
+            <span className="text-lg font-bold" style={{ color: 'var(--points-text)' }}>
               {profile.total_points}
             </span>
             <span className="text-xs text-muted-foreground">总积分</span>
@@ -256,10 +260,13 @@ export default function ProfilePage() {
 
         <Card size="sm">
           <CardContent className="flex flex-col items-center gap-1 py-2">
-            <div className="flex items-center justify-center size-9 rounded-full bg-blue-100">
-              <Clock className="size-5 text-blue-500" />
+            <div
+              className="flex items-center justify-center size-9 rounded-full"
+              style={{ backgroundColor: 'var(--scene-library-bg)' }}
+            >
+              <Clock className="size-5" style={{ color: 'var(--scene-library)' }} />
             </div>
-            <span className="text-lg font-bold text-blue-600">
+            <span className="text-lg font-bold" style={{ color: 'var(--scene-library)' }}>
               {todayFocus}
             </span>
             <span className="text-xs text-muted-foreground">今日专注(分)</span>
@@ -268,10 +275,13 @@ export default function ProfilePage() {
 
         <Card size="sm">
           <CardContent className="flex flex-col items-center gap-1 py-2">
-            <div className="flex items-center justify-center size-9 rounded-full bg-purple-100">
-              <Moon className="size-5 text-purple-500" />
+            <div
+              className="flex items-center justify-center size-9 rounded-full"
+              style={{ backgroundColor: 'var(--scene-dorm-bg)' }}
+            >
+              <Moon className="size-5" style={{ color: 'var(--scene-dorm)' }} />
             </div>
-            <span className="text-lg font-bold text-purple-600">
+            <span className="text-lg font-bold" style={{ color: 'var(--scene-dorm)' }}>
               {sleepStreak}
             </span>
             <span className="text-xs text-muted-foreground">连续早睡(天)</span>
@@ -289,7 +299,7 @@ export default function ProfilePage() {
             <Link href="/profile/points">
               <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <BarChart3 className="size-5 text-[#1E40AF]" />
+                  <BarChart3 className="size-5 text-[var(--accent)]" />
                   <span className="text-sm">积分详情</span>
                 </div>
                 <ChevronRight className="size-4 text-muted-foreground" />
@@ -302,7 +312,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <CalendarDays className="size-5 text-[#1E40AF]" />
+                  <CalendarDays className="size-5 text-[var(--accent)]" />
                   <span className="text-sm">学习记录</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -312,10 +322,20 @@ export default function ProfilePage() {
               </div>
             </button>
 
+            <Link href="/profile/appearance">
+              <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <Palette className="size-5 text-[var(--accent)]" />
+                  <span className="text-sm">外观设置</span>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </div>
+            </Link>
+
             <Link href="/profile/settings">
               <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <Settings className="size-5 text-[#1E40AF]" />
+                  <Settings className="size-5 text-[var(--accent)]" />
                   <span className="text-sm">设置</span>
                 </div>
                 <ChevronRight className="size-4 text-muted-foreground" />
@@ -328,7 +348,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <HelpCircle className="size-5 text-[#1E40AF]" />
+                  <HelpCircle className="size-5 text-[var(--accent)]" />
                   <span className="text-sm">帮助与反馈</span>
                 </div>
                 <div className="flex items-center gap-1">

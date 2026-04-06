@@ -7,14 +7,6 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -67,70 +59,156 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>注册</CardTitle>
-        <CardDescription>创建你的虚拟校园账号</CardDescription>
-      </CardHeader>
-      <form onSubmit={handleRegister}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">邮箱</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="请输入邮箱"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="nickname">昵称（可选）</Label>
-            <Input
-              id="nickname"
-              type="text"
-              placeholder="给自己取个名字"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">密码</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="至少6位密码"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">确认密码</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="再次输入密码"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="animate-spin" />}
-            注册
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            已有账号？{' '}
-            <Link href="/login" className="text-primary hover:underline">
-              去登录
-            </Link>
-          </p>
-        </CardFooter>
+    <div
+      className="rounded-xl p-6"
+      style={{
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow-lg)',
+      }}
+    >
+      {/* 标题 */}
+      <div className="mb-6">
+        <h2
+          className="text-xl font-bold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          注册
+        </h2>
+        <p
+          className="mt-1 text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          创建你的虚拟校园账号
+        </p>
+      </div>
+
+      <form onSubmit={handleRegister} className="space-y-4">
+        {/* 邮箱 */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            邮箱
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="请输入邮箱"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
+        {/* 昵称 */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="nickname"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            昵称（可选）
+          </Label>
+          <Input
+            id="nickname"
+            type="text"
+            placeholder="给自己取个名字"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
+        {/* 密码 */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            密码
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="至少6位密码"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
+        {/* 确认密码 */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="confirmPassword"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            确认密码
+          </Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="再次输入密码"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
+        {/* 注册按钮 */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
+          style={{
+            backgroundColor: 'var(--accent-color)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--accent-hover)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--accent-color)';
+          }}
+        >
+          {loading && <Loader2 className="animate-spin" />}
+          注册
+        </button>
+
+        {/* 登录链接 */}
+        <p
+          className="text-center text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          已有账号？{' '}
+          <Link
+            href="/login"
+            className="hover:underline"
+            style={{ color: 'var(--accent-color)' }}
+          >
+            去登录
+          </Link>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }

@@ -28,27 +28,27 @@ const POINT_TYPE_CONFIG: Record<
   scene_checkin: {
     label: '场景签到',
     icon: MapPin,
-    color: 'text-blue-500',
+    color: 'var(--scene-library)',
   },
   task_complete: {
     label: '任务完成',
     icon: CheckCircle2,
-    color: 'text-green-500',
+    color: 'var(--success)',
   },
   daily_bonus: {
     label: '每日奖励',
     icon: Gift,
-    color: 'text-purple-500',
+    color: 'var(--scene-dorm)',
   },
   sleep: {
     label: '睡眠打卡',
     icon: Moon,
-    color: 'text-indigo-500',
+    color: 'var(--scene-dorm)',
   },
   pomodoro: {
     label: '番茄钟',
     icon: Timer,
-    color: 'text-red-500',
+    color: 'var(--danger)',
   },
 }
 
@@ -107,7 +107,7 @@ export default function PointsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent-color)' }} />
       </div>
     )
   }
@@ -117,26 +117,36 @@ export default function PointsPage() {
       {/* 返回按钮 */}
       <Link
         href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-4 inline-flex items-center gap-1 text-sm hover:underline"
+        style={{ color: 'var(--text-muted)' }}
       >
         <ArrowLeft className="size-4" />
         返回
       </Link>
 
       {/* 积分余额卡片 */}
-      <Card className="mb-4 overflow-hidden border-yellow-500/20 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30">
+      <Card
+        className="mb-4 overflow-hidden"
+        style={{
+          border: '1px solid var(--points-color)',
+          backgroundColor: 'var(--points-bg)',
+        }}
+      >
         <CardContent className="flex flex-col items-center py-8">
           <div className="mb-2 flex items-center gap-2">
-            <Star className="size-8 text-yellow-500" />
-            <span className="text-4xl font-bold text-yellow-600 dark:text-yellow-400">
+            <Star className="size-8" style={{ color: 'var(--points-color)' }} />
+            <span
+              className="text-4xl font-bold"
+              style={{ color: 'var(--points-text)' }}
+            >
               {balance}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">总积分</p>
-          <Separator className="my-3 w-32 bg-yellow-500/20" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>总积分</p>
+          <Separator className="my-3 w-32" style={{ backgroundColor: 'var(--points-color)', opacity: 0.2 }} />
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             今日获得{' '}
-            <span className="font-medium text-green-600 dark:text-green-400">
+            <span className="font-medium" style={{ color: 'var(--success)' }}>
               +{todayEarned}
             </span>{' '}
             积分
@@ -160,7 +170,7 @@ export default function PointsPage() {
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`size-5 ${config.color}`} />
+                    <Icon className="size-5" style={{ color: config.color }} />
                     <span className="text-sm">{config.label}</span>
                   </div>
                   <Badge variant="secondary" className="font-mono">
@@ -181,7 +191,7 @@ export default function PointsPage() {
         <CardContent className="p-0">
           <ScrollArea className="h-[400px]">
             {logs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-12" style={{ color: 'var(--text-muted)' }}>
                 <Star className="mb-2 size-8 opacity-30" />
                 <p className="text-sm">暂无积分记录</p>
               </div>
@@ -197,23 +207,23 @@ export default function PointsPage() {
                       <div className="flex items-center justify-between py-3">
                         <div className="flex items-start gap-3">
                           <Icon
-                            className={`mt-0.5 size-4 shrink-0 ${config?.color ?? 'text-muted-foreground'}`}
+                            className="mt-0.5 size-4 shrink-0"
+                            style={{ color: config?.color ?? 'var(--text-muted)' }}
                           />
                           <div>
                             <p className="text-sm leading-tight">
                               {log.description || config?.label || log.type}
                             </p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
+                            <p className="mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>
                               {formatTime(log.created_at)}
                             </p>
                           </div>
                         </div>
                         <span
-                          className={`shrink-0 text-sm font-medium ${
-                            isPositive
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-red-600 dark:text-red-400'
-                          }`}
+                          className="shrink-0 text-sm font-medium"
+                          style={{
+                            color: isPositive ? 'var(--success)' : 'var(--danger)',
+                          }}
                         >
                           {isPositive ? '+' : ''}
                           {log.points}

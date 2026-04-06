@@ -37,24 +37,27 @@ export default function MainLayout({
 
   return (
     <ProtectedRoute>
-      {/* 顶部栏 */}
+      {/* Top bar */}
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="mx-auto flex h-12 max-w-lg items-center justify-between px-4">
-          <h1 className="text-lg font-bold">虚拟校园</h1>
+          <h1 className="text-lg font-bold text-foreground">
+            虚拟校园
+          </h1>
           <Link
             href="/profile/points"
-            className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-yellow-600"
+            className="flex items-center gap-1 text-sm transition-colors"
+            style={{ color: 'var(--points-color)' }}
           >
-            <Star className="size-4 text-yellow-500" />
+            <Star className="size-4" style={{ color: 'var(--points-color)' }} />
             <span>{points ?? '--'}</span>
           </Link>
         </div>
       </header>
 
-      {/* 主内容区域 */}
+      {/* Main content */}
       <main className="pb-16">{children}</main>
 
-      {/* 底部导航 */}
+      {/* Bottom navigation */}
       <BottomNav />
     </ProtectedRoute>
   );

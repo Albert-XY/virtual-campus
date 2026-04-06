@@ -52,7 +52,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-[#1E40AF]" />
+        <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent-color)' }} />
       </div>
     )
   }
@@ -62,13 +62,13 @@ export default function DashboardPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F97316]/10">
-            <ClipboardList className="size-7 text-[#F97316]" />
+          <div className="inline-flex items-center justify-center size-14 rounded-full" style={{ backgroundColor: 'var(--accent-light)' }}>
+            <ClipboardList className="size-7" style={{ color: 'var(--accent-color)' }} />
           </div>
-          <h2 className="text-xl font-bold text-[#1E40AF]">
+          <h2 className="text-xl font-bold" style={{ color: 'var(--accent-color)' }}>
             修改今日规划
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             调整你的学习安排
           </p>
         </div>
@@ -80,7 +80,8 @@ export default function DashboardPage() {
 
         <button
           onClick={handleCancelReplan}
-          className="w-full text-center text-sm text-muted-foreground hover:text-foreground py-2"
+          className="w-full text-center text-sm py-2"
+          style={{ color: 'var(--text-secondary)' }}
         >
           取消修改
         </button>
@@ -100,13 +101,13 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* 欢迎语 */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#1E40AF]/10">
-              <ClipboardList className="size-7 text-[#1E40AF]" />
+            <div className="inline-flex items-center justify-center size-14 rounded-full" style={{ backgroundColor: 'var(--accent-light)' }}>
+              <ClipboardList className="size-7" style={{ color: 'var(--accent-color)' }} />
             </div>
-            <h2 className="text-xl font-bold text-[#1E40AF]">
+            <h2 className="text-xl font-bold" style={{ color: 'var(--accent-color)' }}>
               规划中心
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               先规划，再行动。完成今日规划后即可进入校园学习。
             </p>
           </div>

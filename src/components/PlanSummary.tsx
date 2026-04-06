@@ -63,12 +63,15 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
             </div>
             <div className="flex items-center gap-1.5">
               {plan.is_completed ? (
-                <Badge className="bg-green-100 text-green-700">
+                <Badge
+                  className="text-white border-0"
+                  style={{ backgroundColor: 'var(--success)' }}
+                >
                   <CheckCircle2 className="size-3" />
                   已完成
                 </Badge>
               ) : (
-                <Badge className="bg-[#1E40AF] text-white">
+                <Badge className="bg-[var(--accent)] text-white">
                   进行中
                 </Badge>
               )}
@@ -95,12 +98,12 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
             <span>
               已完成 {completedCount}/{totalCount} 个任务
             </span>
-            <span className="font-semibold text-[#1E40AF]">
+            <span className="font-semibold" style={{ color: 'var(--accent-color)' }}>
               {progressPercent}%
             </span>
           </div>
           <Progress value={progressPercent}>
-            <div className="h-full bg-[#1E40AF] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+            <div className="h-full rounded-full transition-all" style={{ width: `${progressPercent}%`, backgroundColor: 'var(--accent-color)' }} />
           </Progress>
         </CardContent>
       </Card>
@@ -108,7 +111,7 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
       {/* 学习区间 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#1E40AF]">
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--accent-color)' }}>
             <Clock className="size-4" />
             学习区间
           </CardTitle>
@@ -117,11 +120,12 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
           {plan.study_blocks.map((block, index) => (
             <div
               key={index}
-              className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2"
+              className="flex items-center justify-between rounded-lg px-3 py-2"
+              style={{ backgroundColor: 'var(--scene-library-bg)' }}
             >
               <span className="text-sm font-medium">{block.start}</span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <div className="h-px w-8 bg-blue-200" />
+                <div className="h-px w-8" style={{ backgroundColor: 'var(--scene-library)', opacity: 0.3 }} />
               </div>
               <span className="text-sm font-medium">{block.end}</span>
             </div>
@@ -132,7 +136,7 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
       {/* 休息区间 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#F97316]">
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--accent-color)' }}>
             <Utensils className="size-4" />
             休息区间
           </CardTitle>
@@ -141,7 +145,8 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
           {plan.rest_blocks.map((block, index) => (
             <div
               key={index}
-              className="flex items-center justify-between rounded-lg bg-orange-50 px-3 py-2"
+              className="flex items-center justify-between rounded-lg px-3 py-2"
+              style={{ backgroundColor: 'var(--accent-light)' }}
             >
               <Badge variant="secondary" className="text-xs">
                 {REST_TYPE_LABELS[block.type] || block.type}
@@ -157,7 +162,7 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
       {/* 任务列表（简化：去掉任务类型 badge） */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#1E40AF]">
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--accent-color)' }}>
             <span>&#128203;</span>
             今日任务
           </CardTitle>
@@ -173,11 +178,11 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
             return (
               <div
                 key={index}
-                className={`rounded-lg border p-3 transition-colors ${
-                  isCompleted
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-white'
-                }`}
+                className="rounded-lg border p-3 transition-colors"
+                style={{
+                  backgroundColor: isCompleted ? 'var(--success-light)' : 'var(--bg-card)',
+                  borderColor: isCompleted ? 'var(--success)' : 'var(--border-color)',
+                }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -186,7 +191,7 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
                         {index + 1}
                       </span>
                       {isCompleted && (
-                        <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+                        <CheckCircle2 className="size-4 shrink-0" style={{ color: 'var(--success)' }} />
                       )}
                     </div>
                     <p className={`text-sm font-medium truncate ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
@@ -221,7 +226,11 @@ export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps)
       {/* 进入校园按钮（更突出） */}
       <Link href="/campus" className="block">
         <Button
-          className="w-full h-12 text-base font-bold bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl shadow-lg shadow-[#F97316]/20 transition-all active:scale-[0.98]"
+          className="w-full h-12 text-base font-bold text-white rounded-xl shadow-lg transition-all active:scale-[0.98]"
+          style={{
+            background: 'linear-gradient(135deg, var(--hero-gradient-from) 0%, var(--hero-gradient-to) 100%)',
+            boxShadow: 'var(--shadow-lg)',
+          }}
         >
           <MapPin className="size-5" />
           进入校园

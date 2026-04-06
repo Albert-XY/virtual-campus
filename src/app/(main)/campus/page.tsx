@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { SceneType } from '@/types'
 
 // ============================================================
-// 场景配置
+// Scene config
 // ============================================================
 interface SceneConfig {
   id: SceneType
@@ -16,10 +16,7 @@ interface SceneConfig {
   description: string
   href: string
   available: boolean
-  gradient: string
-  borderColor: string
-  glowColor: string
-  textColor: string
+  cssVarPrefix: string // e.g. 'library', 'study', 'dorm'
 }
 
 const availableScenes: SceneConfig[] = [
@@ -30,10 +27,7 @@ const availableScenes: SceneConfig[] = [
     description: '观看学习视频，掌握知识点',
     href: '/campus/library',
     available: true,
-    gradient: 'from-blue-50 to-blue-100',
-    borderColor: 'border-blue-300',
-    glowColor: 'shadow-blue-200 shadow-lg',
-    textColor: 'text-blue-700',
+    cssVarPrefix: 'library',
   },
   {
     id: 'study-room',
@@ -42,10 +36,7 @@ const availableScenes: SceneConfig[] = [
     description: '完成练习任务，检验学习成果',
     href: '/campus/study-room',
     available: true,
-    gradient: 'from-green-50 to-green-100',
-    borderColor: 'border-green-300',
-    glowColor: 'shadow-green-200 shadow-lg',
-    textColor: 'text-green-700',
+    cssVarPrefix: 'study',
   },
   {
     id: 'dormitory',
@@ -54,10 +45,7 @@ const availableScenes: SceneConfig[] = [
     description: '记录睡眠时间，养成早睡习惯',
     href: '/campus/dormitory',
     available: true,
-    gradient: 'from-purple-50 to-purple-100',
-    borderColor: 'border-purple-300',
-    glowColor: 'shadow-purple-200 shadow-lg',
-    textColor: 'text-purple-700',
+    cssVarPrefix: 'dorm',
   },
 ]
 
@@ -69,10 +57,7 @@ const upcomingScenes: SceneConfig[] = [
     description: '综合测评',
     href: '/campus/exam-center',
     available: false,
-    gradient: '',
-    borderColor: '',
-    glowColor: '',
-    textColor: '',
+    cssVarPrefix: '',
   },
   {
     id: 'sports',
@@ -81,10 +66,7 @@ const upcomingScenes: SceneConfig[] = [
     description: '运动健身',
     href: '/campus/sports',
     available: false,
-    gradient: '',
-    borderColor: '',
-    glowColor: '',
-    textColor: '',
+    cssVarPrefix: '',
   },
   {
     id: 'canteen',
@@ -93,10 +75,7 @@ const upcomingScenes: SceneConfig[] = [
     description: '休息餐饮',
     href: '/campus/canteen',
     available: false,
-    gradient: '',
-    borderColor: '',
-    glowColor: '',
-    textColor: '',
+    cssVarPrefix: '',
   },
   {
     id: 'bulletin',
@@ -105,10 +84,7 @@ const upcomingScenes: SceneConfig[] = [
     description: '校园公告',
     href: '/campus/bulletin',
     available: false,
-    gradient: '',
-    borderColor: '',
-    glowColor: '',
-    textColor: '',
+    cssVarPrefix: '',
   },
   {
     id: 'shop',
@@ -117,15 +93,12 @@ const upcomingScenes: SceneConfig[] = [
     description: '积分兑换',
     href: '/campus/shop',
     available: false,
-    gradient: '',
-    borderColor: '',
-    glowColor: '',
-    textColor: '',
+    cssVarPrefix: '',
   },
 ]
 
 // ============================================================
-// 工具函数
+// Utilities
 // ============================================================
 function getTimeGreeting(): { emoji: string; greeting: string } {
   const hour = new Date().getHours()
@@ -161,7 +134,7 @@ function getDormitoryHint(): string {
 }
 
 // ============================================================
-// 主页面
+// Main Page
 // ============================================================
 export default function CampusPage() {
   const [loading, setLoading] = useState(true)
@@ -177,7 +150,6 @@ export default function CampusPage() {
 
   const fetchAllData = useCallback(async () => {
     try {
-      // 并行请求所有数据
       const [planRes, sceneRes, pointsRes, pomodoroRes, sleepRes, tasksRes] =
         await Promise.allSettled([
           fetch('/api/plan/check'),
@@ -188,13 +160,11 @@ export default function CampusPage() {
           fetch('/api/tasks'),
         ])
 
-      // 规划状态
       if (planRes.status === 'fulfilled' && planRes.value.ok) {
         const data = await planRes.value.json()
         setHasPlan(data.has_plan)
       }
 
-      // 活跃场景
       if (sceneRes.status === 'fulfilled' && sceneRes.value.ok) {
         const data = await sceneRes.value.json()
         if (data.active_checkin?.scene) {
@@ -202,25 +172,21 @@ export default function CampusPage() {
         }
       }
 
-      // 今日积分
       if (pointsRes.status === 'fulfilled' && pointsRes.value.ok) {
         const data = await pointsRes.value.json()
         setTodayPoints(data.today_earned ?? 0)
       }
 
-      // 专注时长
       if (pomodoroRes.status === 'fulfilled' && pomodoroRes.value.ok) {
         const data = await pomodoroRes.value.json()
         setFocusMinutes(data.total_focus_minutes ?? 0)
       }
 
-      // 连续早睡
       if (sleepRes.status === 'fulfilled' && sleepRes.value.ok) {
         const data = await sleepRes.value.json()
         setSleepStreak(data.streak ?? 0)
       }
 
-      // 待完成任务数
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
         const data = await tasksRes.value.json()
         const tasks = data.tasks ?? []
@@ -249,11 +215,11 @@ export default function CampusPage() {
     fetchAllData()
   }, [fetchAllData])
 
-  // 加载状态
+  // Loading state
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-blue-500" />
+        <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent-color)' }} />
       </div>
     )
   }
@@ -263,37 +229,65 @@ export default function CampusPage() {
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-sky-50 to-green-50">
+    <div
+      className="min-h-screen transition-colors duration-300"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
       <div className="mx-auto max-w-lg px-4 py-6">
-        {/* ====== 顶部问候区域 ====== */}
+        {/* ====== Top greeting area ====== */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 text-sm text-sky-600">
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent-color)' }}>
               <span className="text-lg">{timeEmoji}</span>
               <span>{timeStr}</span>
             </div>
-            <h1 className="mt-1 text-xl font-bold text-gray-800">
+            <h1
+              className="mt-1 text-xl font-bold"
+              style={{ color: 'var(--text-primary)' }}
+            >
               {greeting}
             </h1>
           </div>
-          <div className="flex size-12 items-center justify-center rounded-full bg-white/60 text-2xl shadow-sm backdrop-blur-sm">
+          <div
+            className="flex size-12 items-center justify-center text-2xl"
+            style={{
+              borderRadius: '50%',
+              backgroundColor: 'var(--bg-card)',
+              boxShadow: 'var(--shadow)',
+            }}
+          >
             {'\u{1F3EB}'}
           </div>
         </div>
 
-        {/* ====== 未规划遮罩 ====== */}
+        {/* ====== No plan overlay ====== */}
         {!hasPlan && (
           <div className="relative mb-6">
-            <div className="rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 p-5 text-center">
+            <div
+              className="p-5 text-center transition-colors duration-300"
+              style={{
+                borderRadius: 'var(--radius-lg)',
+                backgroundColor: 'var(--accent-light)',
+                border: '1px solid var(--border-color)',
+              }}
+            >
               <div className="mb-3 text-4xl">{'\u{1F512}'}</div>
-              <p className="text-base font-semibold text-orange-700">
+              <p className="text-base font-semibold" style={{ color: 'var(--accent-color)' }}>
                 请先完成今日规划
               </p>
-              <p className="mt-1 text-sm text-orange-500">
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 完成规划后即可进入校园各个场景
               </p>
               <Link href="/dashboard" className="mt-4 inline-block">
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 shadow-md shadow-orange-200">
+                <Button
+                  className="text-white shadow-md"
+                  style={{
+                    backgroundColor: 'var(--accent-color)',
+                    borderRadius: '9999px',
+                    paddingLeft: '1.5rem',
+                    paddingRight: '1.5rem',
+                  }}
+                >
                   去规划
                 </Button>
               </Link>
@@ -301,9 +295,9 @@ export default function CampusPage() {
           </div>
         )}
 
-        {/* ====== 可用场景区域 ====== */}
+        {/* ====== Available scenes ====== */}
         <div className="mb-6 space-y-3">
-          <h2 className="text-sm font-medium text-gray-500 pl-1">
+          <h2 className="text-sm font-medium pl-1" style={{ color: 'var(--text-muted)' }}>
             {'\u{1F3D7}\uFE0F'} 校园场景
           </h2>
           {availableScenes.map((scene) => {
@@ -314,80 +308,125 @@ export default function CampusPage() {
             return (
               <div key={scene.id} className="relative">
                 {isLocked ? (
-                  /* 锁定状态 - 灰色但可见 */
+                  /* Locked state */
                   <div
-                    className={`relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 opacity-60 transition-all duration-200`}
+                    className="relative overflow-hidden p-4 opacity-60 transition-all duration-200"
+                    style={{
+                      borderRadius: 'var(--radius-lg)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)',
+                    }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white/60 text-3xl">
+                      <div
+                        className="flex size-14 shrink-0 items-center justify-center text-3xl"
+                        style={{
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--bg-card)',
+                        }}
+                      >
                         {scene.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-500">
+                          <span className="font-semibold" style={{ color: 'var(--text-muted)' }}>
                             {scene.name}
                           </span>
-                          <Lock className="size-3.5 text-gray-400" />
+                          <Lock className="size-3.5" style={{ color: 'var(--text-muted)' }} />
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-400">
+                        <p className="mt-0.5 text-sm" style={{ color: 'var(--text-muted)' }}>
                           {scene.description}
                         </p>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  /* 可用状态 */
+                  /* Available state */
                   <Link href={scene.href} className="block">
                     <div
-                      className={`relative overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${scene.gradient} ${scene.borderColor} p-4 transition-all duration-200 active:scale-[0.97] ${
-                        isActive
-                          ? `${scene.glowColor} ring-2 ring-offset-2 ring-${scene.textColor.replace('text-', '')}`
-                          : 'hover:shadow-md'
-                      }`}
+                      className="relative overflow-hidden p-4 transition-all duration-200 active:scale-[0.97]"
+                      style={{
+                        borderRadius: 'var(--radius-lg)',
+                        border: '2px solid',
+                        borderColor: `var(--scene-${scene.cssVarPrefix})`,
+                        backgroundColor: `var(--scene-${scene.cssVarPrefix}-bg)`,
+                        boxShadow: isActive ? 'var(--shadow-lg)' : 'var(--shadow)',
+                      }}
                     >
-                      {/* 活跃场景脉冲指示 */}
+                      {/* Active scene pulse indicator */}
                       {isActive && (
                         <div className="absolute right-3 top-3 flex items-center gap-1.5">
                           <span className="relative flex size-2.5">
                             <span
-                              className={`absolute inline-flex size-full animate-ping rounded-full bg-${scene.textColor.replace('text-', '')} opacity-75`}
+                              className="absolute inline-flex size-full animate-ping rounded-full opacity-75"
+                              style={{ backgroundColor: `var(--scene-${scene.cssVarPrefix})` }}
                             />
                             <span
-                              className={`relative inline-flex size-2.5 rounded-full bg-${scene.textColor.replace('text-', '')}`}
+                              className="relative inline-flex size-2.5 rounded-full"
+                              style={{ backgroundColor: `var(--scene-${scene.cssVarPrefix})` }}
                             />
                           </span>
-                          <span className="text-xs font-medium text-gray-500">
+                          <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                             正在学习中...
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-4">
-                        <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white/70 text-3xl shadow-sm">
+                        <div
+                          className="flex size-14 shrink-0 items-center justify-center text-3xl"
+                          style={{
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'var(--bg-card)',
+                            boxShadow: 'var(--shadow)',
+                          }}
+                        >
                           {scene.emoji}
                         </div>
                         <div className="flex-1 min-w-0">
                           <span
-                            className={`text-base font-bold ${scene.textColor}`}
+                            className="text-base font-bold"
+                            style={{ color: `var(--scene-${scene.cssVarPrefix})` }}
                           >
                             {scene.name}
                           </span>
-                          <p className="mt-0.5 text-sm text-gray-500">
+                          <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
                             {scene.description}
                           </p>
-                          {/* 底部提示 */}
+                          {/* Bottom hint */}
                           <div className="mt-2 flex items-center gap-1">
                             {scene.id === 'dormitory' ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-2 py-0.5 text-xs text-gray-500">
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs"
+                                style={{
+                                  borderRadius: '9999px',
+                                  backgroundColor: 'var(--bg-card)',
+                                  color: 'var(--text-secondary)',
+                                }}
+                              >
                                 <Moon className="size-3" />
                                 {getDormitoryHint()}
                               </span>
                             ) : taskCount > 0 ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-2 py-0.5 text-xs text-gray-500">
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs"
+                                style={{
+                                  borderRadius: '9999px',
+                                  backgroundColor: 'var(--bg-card)',
+                                  color: 'var(--text-secondary)',
+                                }}
+                              >
                                 {taskCount}个任务待完成
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-2 py-0.5 text-xs text-green-600">
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs"
+                                style={{
+                                  borderRadius: '9999px',
+                                  backgroundColor: 'var(--bg-card)',
+                                  color: 'var(--success)',
+                                }}
+                              >
                                 {'\u2705'} 已完成
                               </span>
                             )}
@@ -402,56 +441,68 @@ export default function CampusPage() {
           })}
         </div>
 
-        {/* ====== 即将开放场景 ====== */}
+        {/* ====== Upcoming scenes ====== */}
         <div className="mb-6">
-          <h2 className="mb-3 text-sm font-medium text-gray-400 pl-1">
+          <h2 className="mb-3 text-sm font-medium pl-1" style={{ color: 'var(--text-muted)' }}>
             即将开放
           </h2>
           <div className="flex flex-wrap gap-2">
             {upcomingScenes.map((scene) => (
               <div
                 key={scene.id}
-                className="flex items-center gap-2 rounded-xl border border-dashed border-gray-300 bg-white/40 px-3 py-2 backdrop-blur-sm"
+                className="flex items-center gap-2 px-3 py-2"
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--border-color)',
+                  backgroundColor: 'var(--bg-card)',
+                }}
               >
                 <span className="text-lg grayscale opacity-60">{scene.emoji}</span>
-                <span className="text-xs text-gray-400">{scene.name}</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{scene.name}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ====== 底部信息栏 ====== */}
-        <div className="rounded-2xl bg-white/60 p-4 shadow-sm backdrop-blur-sm">
-          <h3 className="mb-3 text-sm font-medium text-gray-500">
+        {/* ====== Bottom info bar ====== */}
+        <div
+          className="p-4 transition-colors duration-300"
+          style={{
+            borderRadius: 'var(--radius-lg)',
+            backgroundColor: 'var(--bg-card)',
+            boxShadow: 'var(--shadow)',
+          }}
+        >
+          <h3 className="mb-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
             {'\u{1F4CA}'} 今日数据
           </h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-amber-500">
-                <Star className="size-4" />
+              <div className="flex items-center justify-center gap-1">
+                <Star className="size-4" style={{ color: 'var(--points-color)' }} />
               </div>
-              <p className="mt-1 text-lg font-bold text-gray-800">
+              <p className="mt-1 text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                 {todayPoints}
               </p>
-              <p className="text-xs text-gray-400">获得积分</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>获得积分</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-blue-500">
-                <Clock className="size-4" />
+              <div className="flex items-center justify-center gap-1">
+                <Clock className="size-4" style={{ color: 'var(--scene-library)' }} />
               </div>
-              <p className="mt-1 text-lg font-bold text-gray-800">
+              <p className="mt-1 text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                 {focusMinutes > 0 ? formatMinutes(focusMinutes) : '0'}
               </p>
-              <p className="text-xs text-gray-400">专注时长</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>专注时长</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-purple-500">
-                <Flame className="size-4" />
+              <div className="flex items-center justify-center gap-1">
+                <Flame className="size-4" style={{ color: 'var(--scene-dorm)' }} />
               </div>
-              <p className="mt-1 text-lg font-bold text-gray-800">
+              <p className="mt-1 text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                 {sleepStreak}
               </p>
-              <p className="text-xs text-gray-400">连续早睡</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>连续早睡</p>
             </div>
           </div>
         </div>

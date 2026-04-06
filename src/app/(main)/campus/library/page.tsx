@@ -29,18 +29,13 @@ import PomodoroTimer from '@/components/PomodoroTimer'
 import type { Task, TaskStatus, SceneCheckin, PomodoroSession } from '@/types'
 
 // ============================================================
-// 常量
-// ============================================================
-const LIBRARY_COLOR = '#1E40AF'
-
-// ============================================================
 // 辅助函数
 // ============================================================
 function statusBadge(status: TaskStatus) {
   switch (status) {
     case 'pending':
       return (
-        <Badge variant="outline" className="text-gray-500 border-gray-300">
+        <Badge variant="outline" className="text-muted-foreground border-border">
           待完成
         </Badge>
       )
@@ -48,7 +43,7 @@ function statusBadge(status: TaskStatus) {
       return (
         <Badge
           variant="outline"
-          className="text-blue-600 border-blue-300 bg-blue-50"
+          className="text-primary border-primary/30 bg-[var(--accent-light)]"
         >
           进行中
         </Badge>
@@ -57,7 +52,7 @@ function statusBadge(status: TaskStatus) {
       return (
         <Badge
           variant="outline"
-          className="text-green-600 border-green-300 bg-green-50"
+          className="text-[var(--success)] border-[var(--success)]/30 bg-[var(--success-light)]"
         >
           已完成
         </Badge>
@@ -349,7 +344,7 @@ export default function LibraryPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin" style={{ color: LIBRARY_COLOR }} />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -359,12 +354,12 @@ export default function LibraryPage() {
       {/* 顶部栏 */}
       <div className="flex items-center gap-3 mb-6">
         <Link href="/campus">
-          <Button variant="ghost" size="sm" className="text-gray-500 -ml-2">
+          <Button variant="ghost" size="sm" className="text-muted-foreground -ml-2">
             <ArrowLeft className="size-4 mr-1" />
             返回校园
           </Button>
         </Link>
-        <h1 className="text-lg font-bold" style={{ color: LIBRARY_COLOR }}>
+        <h1 className="text-lg font-bold" style={{ color: 'var(--scene-library)' }}>
           图书馆
         </h1>
       </div>
@@ -374,17 +369,17 @@ export default function LibraryPage() {
         <div
           className="mb-4 rounded-xl border p-3"
           style={{
-            borderColor: `${LIBRARY_COLOR}30`,
-            backgroundColor: `${LIBRARY_COLOR}08`,
+            borderColor: 'var(--scene-library)',
+            backgroundColor: 'var(--scene-library-bg)',
           }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <BookOpen className="size-4" style={{ color: LIBRARY_COLOR }} />
+            <BookOpen className="size-4" style={{ color: 'var(--scene-library)' }} />
             <span className="text-xs font-medium text-muted-foreground">
               正在学习
             </span>
           </div>
-          <p className="text-sm font-semibold" style={{ color: LIBRARY_COLOR }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--scene-library)' }}>
             {selectedTask.subject} - {selectedTask.topic}
           </p>
         </div>
@@ -414,15 +409,15 @@ export default function LibraryPage() {
                   borderLeftWidth: '3px',
                   borderLeftColor:
                     selectedTask?.id === task.id && task.status !== 'completed'
-                      ? LIBRARY_COLOR
+                      ? 'var(--scene-library)'
                       : 'transparent',
                   borderColor:
                     selectedTask?.id === task.id && task.status !== 'completed'
-                      ? `${LIBRARY_COLOR}40`
-                      : `${LIBRARY_COLOR}15`,
+                      ? 'var(--scene-library)'
+                      : 'var(--border)',
                   backgroundColor:
                     selectedTask?.id === task.id && task.status !== 'completed'
-                      ? `${LIBRARY_COLOR}08`
+                      ? 'var(--scene-library-bg)'
                       : 'transparent',
                 }}
               >
@@ -433,14 +428,14 @@ export default function LibraryPage() {
                       {task.status === 'completed' ? (
                         <CheckCircle2
                           className="size-5"
-                          style={{ color: LIBRARY_COLOR }}
+                          style={{ color: 'var(--scene-library)' }}
                         />
                       ) : task.status === 'in_progress' ? (
-                        <Clock className="size-5 text-blue-500" />
+                        <Clock className="size-5 text-primary" />
                       ) : (
                         <div
                           className="size-5 rounded-full border-2"
-                          style={{ borderColor: '#D1D5DB' }}
+                          style={{ borderColor: 'var(--border)' }}
                         />
                       )}
                     </div>
@@ -465,8 +460,8 @@ export default function LibraryPage() {
                       {/* 已完成：显示积分 */}
                       {task.status === 'completed' && task.points_earned > 0 && (
                         <div className="flex items-center gap-1 mt-1">
-                          <Star className="size-3.5 text-yellow-500" />
-                          <span className="text-xs font-medium text-yellow-600">
+                          <Star className="size-3.5" style={{ color: 'var(--points-color)' }} />
+                          <span className="text-xs font-medium" style={{ color: 'var(--points-text)' }}>
                             +{task.points_earned} 积分
                           </span>
                           {task.actual_minutes !== null && (
@@ -486,7 +481,7 @@ export default function LibraryPage() {
                     {task.status === 'pending' && (
                       <Button
                         size="sm"
-                        style={{ backgroundColor: LIBRARY_COLOR }}
+                        style={{ backgroundColor: 'var(--scene-library)' }}
                         className="text-white hover:opacity-90"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -501,8 +496,8 @@ export default function LibraryPage() {
                         size="sm"
                         variant="outline"
                         style={{
-                          borderColor: LIBRARY_COLOR,
-                          color: LIBRARY_COLOR,
+                          borderColor: 'var(--scene-library)',
+                          color: 'var(--scene-library)',
                         }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -526,13 +521,13 @@ export default function LibraryPage() {
         <div
           className="rounded-xl border p-6"
           style={{
-            borderColor: `${LIBRARY_COLOR}20`,
-            backgroundColor: `${LIBRARY_COLOR}05`,
+            borderColor: 'var(--border)',
+            backgroundColor: 'var(--scene-library-bg)',
           }}
         >
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="size-4" style={{ color: LIBRARY_COLOR }} />
-            <span className="text-sm font-semibold text-gray-700">
+            <Clock className="size-4" style={{ color: 'var(--scene-library)' }} />
+            <span className="text-sm font-semibold text-foreground">
               专注计时
             </span>
           </div>
@@ -553,7 +548,7 @@ export default function LibraryPage() {
           onClick={handleLeave}
           disabled={leaving}
           variant="outline"
-          className="w-full text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+          className="w-full text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
         >
           {leaving ? (
             <Loader2 className="size-4 mr-2 animate-spin" />
@@ -607,7 +602,7 @@ export default function LibraryPage() {
                 step={5}
                 value={accuracyRate}
                 onChange={(e) => setAccuracyRate(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
@@ -638,7 +633,7 @@ export default function LibraryPage() {
               取消
             </Button>
             <Button
-              style={{ backgroundColor: LIBRARY_COLOR }}
+              style={{ backgroundColor: 'var(--scene-library)' }}
               className="text-white hover:opacity-90"
               onClick={handleConfirmComplete}
               disabled={submitting}

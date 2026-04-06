@@ -16,7 +16,13 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t"
+      style={{
+        backgroundColor: 'var(--nav-bg)',
+        borderColor: 'var(--border-color)',
+      }}
+    >
       <div className="mx-auto flex h-14 max-w-lg items-center justify-around">
         {navItems.map((item) => {
           const isActive =
@@ -27,9 +33,12 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-1 text-xs transition-colors ${
-                isActive ? 'text-primary' : 'text-gray-400'
-              }`}
+              className="flex flex-1 flex-col items-center gap-0.5 py-1 text-xs transition-colors"
+              style={{
+                color: isActive
+                  ? 'var(--nav-active)'
+                  : 'var(--nav-inactive)',
+              }}
             >
               <Icon className="size-5" />
               <span>{item.label}</span>

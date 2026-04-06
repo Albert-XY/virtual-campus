@@ -32,7 +32,7 @@ import type { Task, TaskStatus, SceneCheckin, PomodoroSession } from '@/types'
 // ============================================================
 // 常量
 // ============================================================
-const THEME_COLOR = '#16A34A'
+// Use CSS variable --scene-study for theme-aware colors
 
 // ============================================================
 // 辅助函数
@@ -41,7 +41,7 @@ function statusBadge(status: TaskStatus) {
   switch (status) {
     case 'pending':
       return (
-        <Badge variant="outline" className="text-gray-500 border-gray-300">
+        <Badge variant="outline" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)' }}>
           待完成
         </Badge>
       )
@@ -49,7 +49,7 @@ function statusBadge(status: TaskStatus) {
       return (
         <Badge
           variant="outline"
-          className="text-blue-600 border-blue-300 bg-blue-50"
+          style={{ color: 'var(--scene-study)', borderColor: 'var(--scene-study)', backgroundColor: 'var(--scene-study-bg)' }}
         >
           进行中
         </Badge>
@@ -58,7 +58,7 @@ function statusBadge(status: TaskStatus) {
       return (
         <Badge
           variant="outline"
-          className="text-green-600 border-green-300 bg-green-50"
+          style={{ color: 'var(--success)', borderColor: 'var(--success)', backgroundColor: 'var(--success-light)' }}
         >
           已完成
         </Badge>
@@ -324,14 +324,14 @@ export default function StudyRoomPage() {
       {/* ---- 顶部栏 ---- */}
       <div className="flex items-center justify-between mb-6">
         <Link href="/campus">
-          <Button variant="ghost" size="sm" className="text-gray-600">
+          <Button variant="ghost" size="sm" style={{ color: 'var(--text-secondary)' }}>
             <ArrowLeft className="size-4 mr-1" />
             返回校园
           </Button>
         </Link>
         <h1 className="text-lg font-bold flex items-center gap-1.5">
-          <Pencil className="size-5" style={{ color: THEME_COLOR }} />
-          <span style={{ color: THEME_COLOR }}>自习室</span>
+          <Pencil className="size-5" style={{ color: 'var(--scene-study)' }} />
+          <span style={{ color: 'var(--scene-study)' }}>自习室</span>
         </h1>
         <div className="w-20" />
       </div>
@@ -348,9 +348,9 @@ export default function StudyRoomPage() {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div
             className="inline-flex items-center justify-center size-16 rounded-full mb-4"
-            style={{ backgroundColor: `${THEME_COLOR}15` }}
+            style={{ backgroundColor: `${'var(--scene-study)'}15` }}
           >
-            <Pencil className="size-8" style={{ color: THEME_COLOR }} />
+            <Pencil className="size-8" style={{ color: 'var(--scene-study)' }} />
           </div>
           <h2 className="text-lg font-semibold mb-2">暂无任务</h2>
           <p className="text-sm text-muted-foreground mb-4">
@@ -369,17 +369,17 @@ export default function StudyRoomPage() {
         <div
           className="mb-4 rounded-xl border p-3"
           style={{
-            borderColor: `${THEME_COLOR}30`,
-            backgroundColor: `${THEME_COLOR}08`,
+            borderColor: `${'var(--scene-study)'}30`,
+            backgroundColor: `${'var(--scene-study)'}08`,
           }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Pencil className="size-4" style={{ color: THEME_COLOR }} />
+            <Pencil className="size-4" style={{ color: 'var(--scene-study)' }} />
             <span className="text-xs font-medium text-muted-foreground">
               正在学习
             </span>
           </div>
-          <p className="text-sm font-semibold" style={{ color: THEME_COLOR }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--scene-study)' }}>
             {selectedTask.subject} - {selectedTask.topic}
           </p>
         </div>
@@ -407,8 +407,8 @@ export default function StudyRoomPage() {
                 size="sm"
                 className="mt-4"
                 style={{
-                  borderColor: THEME_COLOR,
-                  color: THEME_COLOR,
+                  borderColor: 'var(--scene-study)',
+                  color: 'var(--scene-study)',
                 }}
                 onClick={() => handleOpenComplete(activeTask)}
               >
@@ -439,17 +439,17 @@ export default function StudyRoomPage() {
               className="w-full rounded-xl border p-3 text-left transition-all disabled:opacity-60"
               style={{
                 borderLeftWidth: '3px',
-                borderLeftColor:
+                borderLeftColor: 
                   selectedTask?.id === task.id && task.status !== 'completed'
-                    ? THEME_COLOR
+                    ? 'var(--scene-study)'
                     : 'transparent',
                 borderColor:
                   selectedTask?.id === task.id && task.status !== 'completed'
-                    ? `${THEME_COLOR}40`
-                    : `${THEME_COLOR}15`,
+                    ? `${'var(--scene-study)'}40`
+                    : `${'var(--scene-study)'}15`,
                 backgroundColor:
                   selectedTask?.id === task.id && task.status !== 'completed'
-                    ? `${THEME_COLOR}08`
+                    ? `${'var(--scene-study)'}08`
                     : 'transparent',
               }}
             >
@@ -460,14 +460,14 @@ export default function StudyRoomPage() {
                     {task.status === 'completed' ? (
                       <CheckCircle2
                         className="size-5"
-                        style={{ color: THEME_COLOR }}
+                        style={{ color: 'var(--scene-study)' }}
                       />
                     ) : task.status === 'in_progress' ? (
-                      <Clock className="size-5 text-blue-500" />
+                      <Clock className="size-5" style={{ color: 'var(--scene-study)' }} />
                     ) : (
                       <div
                         className="size-5 rounded-full border-2"
-                        style={{ borderColor: '#D1D5DB' }}
+                        style={{ borderColor: 'var(--border)' }}
                       />
                     )}
                   </div>
@@ -492,8 +492,8 @@ export default function StudyRoomPage() {
                     {/* 已完成：显示积分 */}
                     {task.status === 'completed' && task.points_earned > 0 && (
                       <div className="flex items-center gap-1 mt-1.5">
-                        <Star className="size-3.5 text-yellow-500" />
-                        <span className="text-xs font-medium text-yellow-600">
+                        <Star className="size-3.5" style={{ color: 'var(--points-color)' }} />
+                        <span className="text-xs font-medium" style={{ color: 'var(--points-text)' }}>
                           +{task.points_earned} 积分
                         </span>
                         {task.actual_minutes !== null && (
@@ -513,7 +513,7 @@ export default function StudyRoomPage() {
                   {task.status === 'pending' && (
                     <Button
                       size="sm"
-                      style={{ backgroundColor: THEME_COLOR }}
+                      style={{ backgroundColor: 'var(--scene-study)' }}
                       className="text-white hover:opacity-90"
                       onClick={(e) => {
                         e.stopPropagation()
@@ -528,8 +528,8 @@ export default function StudyRoomPage() {
                       size="sm"
                       variant="outline"
                       style={{
-                        borderColor: THEME_COLOR,
-                        color: THEME_COLOR,
+                        borderColor: 'var(--scene-study)',
+                        color: 'var(--scene-study)',
                       }}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -552,7 +552,8 @@ export default function StudyRoomPage() {
         <div className="mt-8 pb-4">
           <Button
             variant="outline"
-            className="w-full text-gray-500"
+            className="w-full"
+            style={{ color: 'var(--text-secondary)' }}
             onClick={handleLeave}
             disabled={leaving}
           >
@@ -605,7 +606,7 @@ export default function StudyRoomPage() {
                 step={5}
                 value={accuracyRate}
                 onChange={(e) => setAccuracyRate(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
@@ -636,7 +637,7 @@ export default function StudyRoomPage() {
               取消
             </Button>
             <Button
-              style={{ backgroundColor: THEME_COLOR }}
+              style={{ backgroundColor: 'var(--scene-study)' }}
               className="text-white hover:opacity-90"
               onClick={handleConfirmComplete}
               disabled={submitting}

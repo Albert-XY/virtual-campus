@@ -352,16 +352,19 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
   if (showSuccess) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in duration-500">
-        <div className="size-20 rounded-full bg-green-100 flex items-center justify-center">
-          <Sparkles className="size-10 text-green-600" />
+        <div
+          className="size-20 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'var(--success-light)' }}
+        >
+          <Sparkles className="size-10" style={{ color: 'var(--success)' }} />
         </div>
-        <h3 className="text-xl font-bold text-[#1E40AF]">
+        <h3 className="text-xl font-bold" style={{ color: 'var(--accent-color)' }}>
           规划完成！
         </h3>
-        <p className="text-muted-foreground text-center">
+        <p className="text-center" style={{ color: 'var(--text-secondary)' }}>
           去校园开始学习吧
         </p>
-        <ArrowRight className="size-6 text-[#F97316] animate-bounce" />
+        <ArrowRight className="size-6 animate-bounce" style={{ color: 'var(--accent-color)' }} />
       </div>
     )
   }
@@ -374,7 +377,12 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
       {hasYesterdayPlan && !isEditing && (
         <button
           onClick={copyYesterdayPlan}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#1E40AF]/30 bg-[#1E40AF]/5 px-4 py-3 text-sm font-medium text-[#1E40AF] transition-colors hover:bg-[#1E40AF]/10 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-3 text-sm font-medium transition-colors active:scale-[0.98]"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
+            backgroundColor: 'color-mix(in srgb, var(--accent-color) 5%, transparent)',
+            color: 'var(--accent-color)',
+          }}
         >
           <Copy className="size-4" />
           复制昨天的规划
@@ -383,7 +391,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
 
       {/* 第一步：今天要做什么 */}
       <div className="space-y-2">
-        <h3 className="text-base font-semibold text-[#1E40AF]">
+        <h3 className="text-base font-semibold" style={{ color: 'var(--accent-color)' }}>
           今天要做什么？
         </h3>
         <p className="text-xs text-muted-foreground">
@@ -397,9 +405,10 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
             key={task.id}
             className={
               taskErrors[index]
-                ? 'ring-2 ring-red-400 bg-red-50/50'
+                ? 'ring-2'
                 : ''
             }
+            style={taskErrors[index] ? { '--tw-ring-color': 'var(--danger)', backgroundColor: 'color-mix(in srgb, var(--danger) 5%, transparent)' } as React.CSSProperties : undefined}
           >
             <CardContent className="space-y-2.5">
               {/* 任务序号 + 删除按钮 */}
@@ -410,7 +419,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
                 {tasks.length > 1 && (
                   <button
                     onClick={() => removeTask(index)}
-                    className="text-muted-foreground hover:text-red-500 transition-colors p-1"
+                    className="text-muted-foreground hover:text-[var(--danger)] transition-colors p-1"
                   >
                     <Trash2 className="size-3.5" />
                   </button>
@@ -458,7 +467,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
 
               {/* 错误提示 */}
               {taskErrors[index] && (
-                <p className="text-xs text-red-500">{taskErrors[index]}</p>
+                <p className="text-xs" style={{ color: 'var(--danger)' }}>{taskErrors[index]}</p>
               )}
             </CardContent>
           </Card>
@@ -469,7 +478,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
       {tasks.length < 8 && (
         <button
           onClick={addTask}
-          className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-muted-foreground/30 px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-[#1E40AF] hover:text-[#1E40AF] active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-muted-foreground/30 px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98]"
         >
           <Plus className="size-4" />
           添加任务
@@ -480,7 +489,8 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
       <div className="rounded-xl border bg-card overflow-hidden">
         <button
           onClick={() => setTimeExpanded(!timeExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#1E40AF] hover:bg-muted/50 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors"
+          style={{ color: 'var(--accent-color)' }}
         >
           <span className="flex items-center gap-2">
             <Clock className="size-4" />
@@ -498,7 +508,8 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
             {/* 使用默认时间表 */}
             <button
               onClick={useDefaultSchedule}
-              className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-[#1E40AF]/10 px-3 py-2 text-xs font-medium text-[#1E40AF] hover:bg-[#1E40AF]/15 transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 10%, transparent)', color: 'var(--accent-color)' }}
             >
               <Sparkles className="size-3.5" />
               使用默认时间表
@@ -531,17 +542,18 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
                   {studyBlocks.length > 1 && (
                     <button
                       onClick={() => removeStudyBlock(index)}
-                      className="text-muted-foreground hover:text-red-500 transition-colors p-1"
+                      className="text-muted-foreground hover:text-[var(--danger)] transition-colors p-1"
                     >
                       <Trash2 className="size-3.5" />
-                    </button>
+                      </button>
                   )}
                 </div>
               ))}
               {studyBlocks.length < 4 && (
                 <button
                   onClick={addStudyBlock}
-                  className="text-xs text-[#1E40AF] hover:underline"
+                  className="text-xs hover:underline"
+                  style={{ color: 'var(--accent-color)' }}
                 >
                   + 添加学习区间
                 </button>
@@ -589,7 +601,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
                   />
                   <button
                     onClick={() => removeRestBlock(index)}
-                    className="text-muted-foreground hover:text-red-500 transition-colors p-1"
+                    className="text-muted-foreground hover:text-[var(--danger)] transition-colors p-1"
                   >
                     <Trash2 className="size-3.5" />
                   </button>
@@ -598,7 +610,8 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
               {restBlocks.length < 3 && (
                 <button
                   onClick={addRestBlock}
-                  className="text-xs text-[#F97316] hover:underline"
+                  className="text-xs hover:underline"
+                  style={{ color: 'var(--accent-color)' }}
                 >
                   + 添加休息区间
                 </button>
@@ -610,8 +623,8 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
 
       {/* 第三步：摘要预览 + 提交 */}
       {summary.taskCount > 0 && (
-        <div className="rounded-xl bg-[#1E40AF]/5 border border-[#1E40AF]/15 px-4 py-3 space-y-1">
-          <p className="text-sm text-[#1E40AF] font-medium">
+        <div className="rounded-xl px-4 py-3 space-y-1" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 15%, transparent)' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--accent-color)' }}>
             {summary.taskCount} 个任务
             {summary.totalMinutes > 0 && `，共 ${summary.totalMinutes} 分钟`}
             {summary.studyHours > 0 && `，学习 ${summary.studyHours} 小时`}
@@ -623,7 +636,11 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
       <Button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full h-12 text-base font-bold bg-[#1E40AF] hover:bg-[#1E3A8A] text-white rounded-xl shadow-lg shadow-[#1E40AF]/20 transition-all active:scale-[0.98]"
+        className="w-full h-12 text-base font-bold text-white rounded-xl shadow-lg transition-all active:scale-[0.98]"
+        style={{
+          background: 'linear-gradient(135deg, var(--hero-gradient-from) 0%, var(--hero-gradient-to) 100%)',
+          boxShadow: 'var(--shadow-lg)',
+        }}
       >
         {submitting ? (
           <>

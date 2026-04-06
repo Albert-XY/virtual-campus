@@ -31,9 +31,9 @@ interface PersistedState {
 // ============================================================
 const DEFAULT_FOCUS_MINUTES = 25
 const DEFAULT_BREAK_MINUTES = 5
-const FOCUS_COLOR = '#1E40AF'
-const BREAK_COLOR = '#F97316'
-const TRACK_COLOR = '#E5E7EB'
+const FOCUS_COLOR = 'var(--accent)'
+const BREAK_COLOR = 'var(--accent-color)'
+const TRACK_COLOR = 'var(--border)'
 
 // ============================================================
 // 工具函数
@@ -456,12 +456,12 @@ export default function PomodoroTimer({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
             className={`font-mono font-bold tabular-nums ${compact ? 'text-xl' : 'text-3xl'}`}
-            style={{ color: timerState === 'idle' ? '#374151' : strokeColor }}
+            style={{ color: timerState === 'idle' ? 'var(--text-primary)' : strokeColor }}
           >
             {formatTime(remainingSeconds)}
           </span>
           {!compact && (
-            <span className="text-xs text-gray-500 mt-1">{statusText}</span>
+            <span className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{statusText}</span>
           )}
         </div>
       </div>
@@ -494,7 +494,7 @@ export default function PomodoroTimer({
               onClick={handleAbandon}
               variant="outline"
               size={compact ? 'sm' : 'default'}
-              className="text-red-500 border-red-200 hover:bg-red-50"
+              className="text-[var(--danger)] border-[var(--danger)]/20 hover:bg-[var(--danger)]/10"
             >
               <Square className="w-4 h-4 mr-1" />
               {compact ? '放弃' : '放弃'}
@@ -517,7 +517,7 @@ export default function PomodoroTimer({
               onClick={handleAbandon}
               variant="outline"
               size={compact ? 'sm' : 'default'}
-              className="text-red-500 border-red-200 hover:bg-red-50"
+              className="text-[var(--danger)] border-[var(--danger)]/20 hover:bg-[var(--danger)]/10"
             >
               <Square className="w-4 h-4 mr-1" />
               {compact ? '放弃' : '放弃'}
@@ -530,7 +530,6 @@ export default function PomodoroTimer({
             onClick={handleSkipBreak}
             variant="outline"
             style={{ borderColor: BREAK_COLOR, color: BREAK_COLOR }}
-            className="hover:bg-orange-50"
             size={compact ? 'sm' : 'default'}
           >
             <SkipForward className="w-4 h-4 mr-1" />
@@ -542,7 +541,7 @@ export default function PomodoroTimer({
           <Button
             variant="ghost"
             size={compact ? 'sm' : 'default'}
-            className="text-gray-400"
+            className="opacity-40"
             disabled
           >
             <RotateCcw className="w-4 h-4 mr-1" />

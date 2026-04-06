@@ -24,7 +24,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 
 // ============================================================
-// 类型定义
+// Types
 // ============================================================
 interface TodayData {
   has_plan: boolean
@@ -60,15 +60,15 @@ interface CheckinRecord {
   duration_minutes: number | null
 }
 
-// 任务类型配置
-const TASK_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  knowledge: { label: '知识学习', color: 'bg-blue-100 text-blue-700' },
-  practice: { label: '练习巩固', color: 'bg-green-100 text-green-700' },
-  collaboration: { label: '协作讨论', color: 'bg-purple-100 text-purple-700' },
-  self: { label: '自主学习', color: 'bg-orange-100 text-orange-700' },
+// Task type config - using CSS variable compatible approach
+const TASK_TYPE_CONFIG: Record<string, { label: string; style: React.CSSProperties }> = {
+  knowledge: { label: '知识学习', style: { backgroundColor: 'var(--scene-library-bg)', color: 'var(--scene-library)' } },
+  practice: { label: '练习巩固', style: { backgroundColor: 'var(--scene-study-bg)', color: 'var(--scene-study)' } },
+  collaboration: { label: '协作讨论', style: { backgroundColor: 'var(--scene-dorm-bg)', color: 'var(--scene-dorm)' } },
+  self: { label: '自主学习', style: { backgroundColor: 'var(--accent-light)', color: 'var(--accent-color)' } },
 }
 
-// 场景 emoji 映射
+// Scene emoji mapping
 const SCENE_EMOJI: Record<string, string> = {
   library: '\u{1F4DA}',
   'study-room': '\u270F\uFE0F',
@@ -81,15 +81,15 @@ const SCENE_EMOJI: Record<string, string> = {
 }
 
 // ============================================================
-// 工具函数
+// Utilities
 // ============================================================
-function getGreeting(): string {
+function getGreeting(): { text: string; emoji: string } {
   const hour = new Date().getHours()
-  if (hour < 6) return '夜深了'
-  if (hour < 12) return '早上好'
-  if (hour < 14) return '中午好'
-  if (hour < 18) return '下午好'
-  return '晚上好'
+  if (hour < 6) return { text: '夜深了，注意休息', emoji: '\u{1F319}' }
+  if (hour < 12) return { text: '新的一天，准备好了吗', emoji: '\u{1F305}' }
+  if (hour < 14) return { text: '中午好，记得休息一下', emoji: '\u{1F324}\uFE0F' }
+  if (hour < 18) return { text: '下午好，继续加油', emoji: '\u2600\uFE0F' }
+  return { text: '今天辛苦了', emoji: '\u{1F319}' }
 }
 
 function formatTime(isoStr: string): string {
@@ -104,7 +104,7 @@ function getElapsedMinutes(isoStr: string): number {
 }
 
 // ============================================================
-// 主页面
+// Main Page
 // ============================================================
 export default function TodayPage() {
   const router = useRouter()
@@ -151,7 +151,7 @@ export default function TodayPage() {
     init()
   }, [fetchData])
 
-  // 快速规划
+  // Quick plan
   const handleQuickPlan = async () => {
     setQuickPlanning(true)
     try {
@@ -176,7 +176,7 @@ export default function TodayPage() {
     }
   }
 
-  // 复制昨天的规划
+  // Copy yesterday's plan
   const handleCopyYesterday = async () => {
     if (!data?.yesterday_plan) return
 
@@ -213,7 +213,7 @@ export default function TodayPage() {
     }
   }
 
-  // 离开当前场景
+  // Leave current scene
   const handleLeaveScene = async () => {
     if (!data?.active_scene) return
 
@@ -237,18 +237,18 @@ export default function TodayPage() {
     }
   }
 
-  // 加载状态
+  // Loading state
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-[#1E40AF]" />
+        <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent-color)' }} />
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-6 text-center text-muted-foreground">
+      <div className="mx-auto max-w-lg px-4 py-6 text-center" style={{ color: 'var(--text-muted)' }}>
         加载失败，请刷新重试
       </div>
     )
@@ -256,7 +256,7 @@ export default function TodayPage() {
 
   const greeting = getGreeting()
 
-  // 计算任务进度
+  // Calculate task progress
   const tasks = data.tasks ?? []
   const completedTasks = tasks.filter((t) => t.status === 'completed').length
   const totalTasks = tasks.length
@@ -264,13 +264,13 @@ export default function TodayPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6 space-y-5">
-      {/* 顶部问候语 */}
+      {/* Top greeting */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[#1E40AF]">
-            {greeting}，{nickname || '同学'}
+          <h2 className="text-xl font-bold" style={{ color: 'var(--accent-color)', fontFamily: 'var(--font-display)' }}>
+            {greeting.emoji} {greeting.text}，{nickname || '同学'}
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
             {new Date().toLocaleDateString('zh-CN', {
               month: 'long',
               day: 'numeric',
@@ -278,72 +278,102 @@ export default function TodayPage() {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-yellow-50 px-3 py-1.5">
-          <Star className="size-4 text-yellow-500" />
-          <span className="text-sm font-semibold text-yellow-700">
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5"
+          style={{
+            backgroundColor: 'var(--points-bg)',
+            borderRadius: '9999px',
+          }}
+        >
+          <Star className="size-4" style={{ color: 'var(--points-color)' }} />
+          <span className="text-sm font-semibold" style={{ color: 'var(--points-text)' }}>
             +{data.today_points}
           </span>
         </div>
       </div>
 
       {/* ============================================ */}
-      {/* 状态1：未规划 */}
+      {/* State 1: No plan */}
       {/* ============================================ */}
       {!data.has_plan && (
         <>
-          {/* 大卡片提示 */}
+          {/* Hero card */}
           <div
-            className="rounded-2xl p-6 text-white"
+            className="p-6 text-white transition-all duration-300"
             style={{
-              background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #60A5FA 100%)',
+              borderRadius: 'var(--radius-lg)',
+              background: `linear-gradient(135deg, var(--hero-gradient-from) 0%, var(--hero-gradient-via) 50%, var(--hero-gradient-to) 100%)`,
             }}
           >
             <div className="flex items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/20">
+              <div
+                className="flex size-12 shrink-0 items-center justify-center"
+                style={{
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                }}
+              >
                 <ClipboardList className="size-6" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-bold">新的一天，先规划一下今天吧！</h3>
-                <p className="mt-1 text-sm text-blue-100">
+                <p className="mt-1 text-sm" style={{ color: 'var(--hero-subtext)' }}>
                   完成规划后即可进入虚拟校园开始学习
                 </p>
               </div>
             </div>
           </div>
 
-          {/* 快速规划 + 详细规划 */}
+          {/* Quick plan + Detailed plan */}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleQuickPlan}
               disabled={quickPlanning}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-[#1E40AF]/20 bg-[#1E40AF]/5 p-4 transition-all active:scale-[0.97] disabled:opacity-50"
+              className="flex flex-col items-center gap-2 p-4 transition-all active:scale-[0.97] disabled:opacity-50"
+              style={{
+                borderRadius: 'var(--radius-md)',
+                border: '2px solid',
+                borderColor: 'color-mix(in srgb, var(--accent-color) 20%, transparent)',
+                backgroundColor: 'color-mix(in srgb, var(--accent-color) 5%, transparent)',
+              }}
             >
               {quickPlanning ? (
-                <Loader2 className="size-6 animate-spin text-[#1E40AF]" />
+                <Loader2 className="size-6 animate-spin" style={{ color: 'var(--accent-color)' }} />
               ) : (
-                <Zap className="size-6 text-[#1E40AF]" />
+                <Zap className="size-6" style={{ color: 'var(--accent-color)' }} />
               )}
-              <span className="text-sm font-semibold text-[#1E40AF]">快速规划</span>
-              <span className="text-xs text-muted-foreground text-center">
+              <span className="text-sm font-semibold" style={{ color: 'var(--accent-color)' }}>快速规划</span>
+              <span className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                 使用默认模板一键创建
               </span>
             </button>
 
-            <Link href="/dashboard" className="flex flex-col items-center gap-2 rounded-xl border-2 border-[#F97316]/20 bg-[#F97316]/5 p-4 transition-all active:scale-[0.97]">
-              <ClipboardList className="size-6 text-[#F97316]" />
-              <span className="text-sm font-semibold text-[#F97316]">详细规划</span>
-              <span className="text-xs text-muted-foreground text-center">
+            <Link href="/dashboard" className="flex flex-col items-center gap-2 p-4 transition-all active:scale-[0.97]" style={{
+              borderRadius: 'var(--radius-md)',
+              border: '2px solid',
+              borderColor: 'color-mix(in srgb, var(--success) 20%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--success) 5%, transparent)',
+            }}>
+              <ClipboardList className="size-6" style={{ color: 'var(--success)' }} />
+              <span className="text-sm font-semibold" style={{ color: 'var(--success)' }}>详细规划</span>
+              <span className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                 自定义学习区间和任务
               </span>
             </Link>
           </div>
 
-          {/* 复制昨天的规划 */}
+          {/* Copy yesterday's plan */}
           {data.yesterday_plan && (
             <button
               onClick={handleCopyYesterday}
               disabled={copying}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3 text-sm text-muted-foreground transition-colors hover:bg-gray-100 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 p-3 text-sm transition-colors disabled:opacity-50"
+              style={{
+                borderRadius: 'var(--radius-md)',
+                border: '1px dashed var(--border-color)',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-secondary)',
+              }}
             >
               {copying ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -357,15 +387,16 @@ export default function TodayPage() {
       )}
 
       {/* ============================================ */}
-      {/* 状态2：已规划，有进行中的场景 */}
+      {/* State 2: Has plan, active scene */}
       {/* ============================================ */}
       {data.has_plan && data.active_scene && (
         <>
-          {/* 当前场景卡片 */}
+          {/* Current scene card */}
           <div
-            className="rounded-2xl p-5 text-white"
+            className="p-5 text-white transition-all duration-300"
             style={{
-              background: 'linear-gradient(135deg, #059669 0%, #10B981 50%, #34D399 100%)',
+              borderRadius: 'var(--radius-lg)',
+              background: `linear-gradient(135deg, var(--scene-active-from) 0%, var(--scene-active-via) 50%, var(--scene-active-to) 100%)`,
             }}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -373,37 +404,37 @@ export default function TodayPage() {
                 {SCENE_EMOJI[data.active_scene.scene] || '\u{1F4CD}'}
               </span>
               <div>
-                <p className="text-sm text-green-100">正在学习中</p>
+                <p className="text-sm" style={{ color: 'var(--hero-subtext)' }}>正在学习中</p>
                 <h3 className="text-lg font-bold">
                   {data.active_scene.scene_name}
                 </h3>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-green-100">
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--hero-subtext)' }}>
               <Clock className="size-4" />
               <span>已学习 {getElapsedMinutes(data.active_scene.started_at)} 分钟</span>
             </div>
           </div>
 
-          {/* 任务进度 */}
+          {/* Task progress */}
           <Card>
             <CardContent className="pt-5">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-muted-foreground">今日任务进度</span>
-                <span className="font-semibold text-[#1E40AF]">
+                <span style={{ color: 'var(--text-secondary)' }}>今日任务进度</span>
+                <span className="font-semibold" style={{ color: 'var(--accent-color)' }}>
                   {completedTasks}/{totalTasks}
                 </span>
               </div>
               <Progress value={progressPercent}>
                 <div
-                  className="h-full bg-[#1E40AF] rounded-full transition-all"
-                  style={{ width: `${progressPercent}%` }}
+                  className="h-full rounded-full transition-all"
+                  style={{ width: `${progressPercent}%`, backgroundColor: 'var(--accent-color)' }}
                 />
               </Progress>
             </CardContent>
           </Card>
 
-          {/* 快捷操作 */}
+          {/* Quick actions */}
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
@@ -424,70 +455,75 @@ export default function TodayPage() {
       )}
 
       {/* ============================================ */}
-      {/* 状态3：已规划，无进行中的场景 */}
+      {/* State 3: Has plan, no active scene */}
       {/* ============================================ */}
       {data.has_plan && !data.active_scene && (
         <>
-          {/* 今日规划摘要 */}
+          {/* Today's plan summary */}
           <Card>
             <CardContent className="pt-5 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-[#1E40AF]">今日规划</h3>
-                <Badge className="bg-[#1E40AF] text-white">已规划</Badge>
+                <h3 className="font-semibold" style={{ color: 'var(--accent-color)' }}>今日规划</h3>
+                <Badge className="text-white" style={{ backgroundColor: 'var(--accent-color)' }}>已规划</Badge>
               </div>
 
-              {/* 学习区间 */}
+              {/* Study blocks */}
               {data.plan && (data.plan.study_blocks as { start: string; end: string }[]).map((block, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2"
+                  className="flex items-center justify-between px-3 py-2"
+                  style={{
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--accent-light)',
+                  }}
                 >
                   <span className="text-sm font-medium">{block.start}</span>
-                  <div className="h-px flex-1 mx-2 bg-blue-200" />
+                  <div className="h-px flex-1 mx-2" style={{ backgroundColor: 'var(--border-color)' }} />
                   <span className="text-sm font-medium">{block.end}</span>
                 </div>
               ))}
 
-              {/* 任务进度 */}
+              {/* Task progress */}
               <div className="pt-1">
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">任务进度</span>
-                  <span className="font-semibold text-[#1E40AF]">
+                  <span style={{ color: 'var(--text-secondary)' }}>任务进度</span>
+                  <span className="font-semibold" style={{ color: 'var(--accent-color)' }}>
                     {completedTasks}/{totalTasks} ({progressPercent}%)
                   </span>
                 </div>
                 <Progress value={progressPercent}>
                   <div
-                    className="h-full bg-[#1E40AF] rounded-full transition-all"
-                    style={{ width: `${progressPercent}%` }}
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${progressPercent}%`, backgroundColor: 'var(--accent-color)' }}
                   />
                 </Progress>
               </div>
 
-              {/* 任务列表 */}
+              {/* Task list */}
               {tasks.length > 0 && (
                 <div className="space-y-2 pt-1">
                   {tasks.map((task) => (
                     <div
                       key={task.id}
-                      className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-                        task.status === 'completed'
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-white'
-                      }`}
+                      className="flex items-center gap-2 p-2.5 transition-all duration-300"
+                      style={{
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid',
+                        borderColor: task.status === 'completed' ? 'var(--success)' : 'var(--border-color)',
+                        backgroundColor: task.status === 'completed' ? 'var(--success-light)' : 'var(--bg-card)',
+                      }}
                     >
                       {task.status === 'completed' ? (
-                        <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+                        <CheckCircle2 className="size-4 shrink-0" style={{ color: 'var(--success)' }} />
                       ) : (
-                        <Circle className="size-4 text-gray-300 shrink-0" />
+                        <Circle className="size-4 shrink-0" style={{ color: 'var(--border-color)' }} />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <Badge
-                            className={
-                              TASK_TYPE_CONFIG[task.task_type]?.color ??
-                              'bg-gray-100 text-gray-700'
-                            }
+                            variant="outline"
+                            className="border-0"
+                            style={TASK_TYPE_CONFIG[task.task_type]?.style ?? { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                           >
                             {TASK_TYPE_CONFIG[task.task_type]?.label ?? task.task_type}
                           </Badge>
@@ -495,11 +531,11 @@ export default function TodayPage() {
                             {task.subject}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
                           {task.topic}
                         </p>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">
+                      <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>
                         {task.estimated_minutes}min
                       </span>
                     </div>
@@ -509,12 +545,12 @@ export default function TodayPage() {
             </CardContent>
           </Card>
 
-          {/* 进入校园按钮 */}
+          {/* Enter campus button */}
           <Link href="/campus" className="block">
             <Button
               className="w-full h-12 text-base font-semibold text-white"
               style={{
-                background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)',
+                background: `linear-gradient(135deg, var(--hero-gradient-from) 0%, var(--hero-gradient-to) 100%)`,
               }}
             >
               <MapPin className="size-5" />
@@ -522,11 +558,17 @@ export default function TodayPage() {
             </Button>
           </Link>
 
-          {/* 今日积分 */}
+          {/* Today points */}
           {data.today_points > 0 && (
-            <div className="flex items-center justify-center gap-2 rounded-xl bg-yellow-50 px-4 py-3">
-              <Star className="size-4 text-yellow-500" />
-              <span className="text-sm text-yellow-700">
+            <div
+              className="flex items-center justify-center gap-2 px-4 py-3"
+              style={{
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--points-bg)',
+              }}
+            >
+              <Star className="size-4" style={{ color: 'var(--points-color)' }} />
+              <span className="text-sm" style={{ color: 'var(--points-text)' }}>
                 今日已获得 <strong>{data.today_points}</strong> 积分
               </span>
             </div>
@@ -535,19 +577,20 @@ export default function TodayPage() {
       )}
 
       {/* ============================================ */}
-      {/* 底部时间线 */}
+      {/* Bottom timeline */}
       {/* ============================================ */}
       {data.today_checkins.length > 0 && (
         <Card>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                 今日时间线
               </h3>
               {data.has_plan && (
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-0.5 text-xs text-[#1E40AF]"
+                  className="flex items-center gap-0.5 text-xs"
+                  style={{ color: 'var(--accent-color)' }}
                 >
                   查看详情
                   <ChevronRight className="size-3" />
@@ -559,13 +602,14 @@ export default function TodayPage() {
                 <div key={checkin.id} className="flex items-center gap-3">
                   <div className="flex flex-col items-center">
                     <div
-                      className="size-2.5 rounded-full"
+                      className="size-2.5"
                       style={{
-                        backgroundColor: checkin.check_out_at ? '#10B981' : '#F97316',
+                        borderRadius: '50%',
+                        backgroundColor: checkin.check_out_at ? 'var(--success)' : 'var(--accent-color)',
                       }}
                     />
                     {checkin !== data.today_checkins[data.today_checkins.length - 1] && (
-                      <div className="w-px h-6 bg-gray-200" />
+                      <div className="w-px h-6" style={{ backgroundColor: 'var(--border-color)' }} />
                     )}
                   </div>
                   <div className="flex-1 flex items-center justify-between">
@@ -575,7 +619,7 @@ export default function TodayPage() {
                       </span>
                       <span className="text-sm">{checkin.scene_name}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       {formatTime(checkin.check_in_at)}
                       {checkin.duration_minutes != null
                         ? ` ${checkin.duration_minutes}min`

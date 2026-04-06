@@ -47,7 +47,14 @@ export async function GET() {
       return NextResponse.json({ error: '查询任务失败' }, { status: 500 })
     }
 
-    return NextResponse.json({ tasks: tasks ?? [] })
+    // 已完成的任务排在最后
+    const sortedTasks = (tasks ?? []).sort((a, b) => {
+      if (a.status === 'completed' && b.status !== 'completed') return 1
+      if (a.status !== 'completed' && b.status === 'completed') return -1
+      return 0
+    })
+
+    return NextResponse.json({ tasks: sortedTasks })
   } catch (error) {
     console.error('获取任务异常:', error)
     return NextResponse.json({ error: '服务器错误' }, { status: 500 })

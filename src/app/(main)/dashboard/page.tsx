@@ -10,6 +10,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [plan, setPlan] = useState<DailyPlan | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [isReplanning, setIsReplanning] = useState(false)
 
   const fetchPlan = useCallback(async () => {
     setLoading(true)
@@ -36,8 +37,17 @@ export default function DashboardPage() {
   }, [fetchPlan])
 
   const handlePlanCreated = useCallback(() => {
+    setIsReplanning(false)
     fetchPlan()
   }, [fetchPlan])
+
+  const handleReplan = useCallback(() => {
+    setIsReplanning(true)
+  }, [])
+
+  const handleCancelReplan = useCallback(() => {
+    setIsReplanning(false)
+  }, [])
 
   if (loading) {
     return (
@@ -47,10 +57,45 @@ export default function DashboardPage() {
     )
   }
 
+  // 重新规划模式
+  if (isReplanning && plan) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F97316]/10">
+            <ClipboardList className="size-7 text-[#F97316]" />
+          </div>
+          <h2 className="text-xl font-bold text-[#1E40AF]">
+            修改今日规划
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            调整你的学习安排
+          </p>
+        </div>
+
+        <PlanForm
+          onSuccess={handlePlanCreated}
+          editPlan={plan}
+        />
+
+        <button
+          onClick={handleCancelReplan}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground py-2"
+        >
+          取消修改
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
       {plan ? (
-        <PlanSummary plan={plan} tasks={tasks} />
+        <PlanSummary
+          plan={plan}
+          tasks={tasks}
+          onReplan={handleReplan}
+        />
       ) : (
         <div className="space-y-6">
           {/* 欢迎语 */}

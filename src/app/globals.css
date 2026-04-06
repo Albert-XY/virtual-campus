@@ -128,3 +128,42 @@
     @apply font-sans;
   }
 }
+
+/* 场景进入动画 */
+@keyframes sceneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sceneToastFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-scene-fade-in {
+  animation: sceneFadeIn 0.5s ease-out forwards;
+}
+
+.animate-scene-toast {
+  animation: sceneToastFade 1.5s ease-out forwards;
+}

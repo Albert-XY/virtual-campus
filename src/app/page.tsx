@@ -48,7 +48,7 @@ export default function HomePage() {
       } = await supabase.auth.getUser();
 
       if (user) {
-        router.push('/dashboard');
+        router.push('/today');
         return;
       }
 

@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, ClipboardList, Star, User } from 'lucide-react';
+import { Home, Map, ClipboardList, Star, User } from 'lucide-react';
 
 const navItems = [
+  { href: '/today', label: '今日', icon: Home },
   { href: '/campus', label: '校园', icon: Map },
   { href: '/dashboard', label: '规划', icon: ClipboardList },
   { href: '/profile/points', label: '积分', icon: Star },

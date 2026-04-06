@@ -29,7 +29,7 @@ export type PlanTaskType = 'knowledge' | 'practice' | 'collaboration' | 'self'
 
 export interface PlanTask {
   id: number
-  type: PlanTaskType
+  type?: PlanTaskType
   subject: string
   topic: string
   estimated_min: number

@@ -3,23 +3,12 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { Clock, Utensils, CheckCircle2, MapPin } from 'lucide-react'
+import { Clock, Utensils, CheckCircle2, MapPin, Pencil } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import type { DailyPlan, Task, PlanTaskType } from '@/types'
-
-// 任务类型配置
-const TASK_TYPE_CONFIG: Record<
-  PlanTaskType,
-  { label: string; color: string }
-> = {
-  knowledge: { label: '知识学习', color: 'bg-blue-100 text-blue-700' },
-  practice: { label: '练习巩固', color: 'bg-green-100 text-green-700' },
-  collaboration: { label: '协作讨论', color: 'bg-purple-100 text-purple-700' },
-  self: { label: '自主学习', color: 'bg-orange-100 text-orange-700' },
-}
+import type { DailyPlan, Task } from '@/types'
 
 const REST_TYPE_LABELS: Record<string, string> = {
   breakfast: '早餐',
@@ -30,9 +19,10 @@ const REST_TYPE_LABELS: Record<string, string> = {
 interface PlanSummaryProps {
   plan: DailyPlan
   tasks: Task[]
+  onReplan?: () => void
 }
 
-export default function PlanSummary({ plan, tasks }: PlanSummaryProps) {
+export default function PlanSummary({ plan, tasks, onReplan }: PlanSummaryProps) {
   // 计算任务完成进度
   const completedCount = tasks.filter(
     (t) => t.status === 'completed'
@@ -164,7 +154,7 @@ export default function PlanSummary({ plan, tasks }: PlanSummaryProps) {
         </CardContent>
       </Card>
 
-      {/* 任务列表 */}
+      {/* 任务列表（简化：去掉任务类型 badge） */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-[#1E40AF]">
@@ -192,25 +182,17 @@ export default function PlanSummary({ plan, tasks }: PlanSummaryProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge
-                        className={
-                          TASK_TYPE_CONFIG[task.type as PlanTaskType]?.color ??
-                          'bg-gray-100 text-gray-700'
-                        }
-                      >
-                        {
-                          TASK_TYPE_CONFIG[task.type as PlanTaskType]
-                            ?.label ?? task.type
-                        }
-                      </Badge>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {index + 1}
+                      </span>
                       {isCompleted && (
                         <CheckCircle2 className="size-4 text-green-600 shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm font-medium truncate">
+                    <p className={`text-sm font-medium truncate ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
                       {task.subject}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className={`text-xs text-muted-foreground truncate ${isCompleted ? 'line-through' : ''}`}>
                       {task.topic}
                     </p>
                   </div>
@@ -224,12 +206,24 @@ export default function PlanSummary({ plan, tasks }: PlanSummaryProps) {
         </CardContent>
       </Card>
 
-      {/* 进入校园按钮 */}
+      {/* 重新规划按钮 */}
+      {onReplan && (
+        <Button
+          onClick={onReplan}
+          variant="outline"
+          className="w-full h-10 text-sm font-medium rounded-xl"
+        >
+          <Pencil className="size-4" />
+          重新规划
+        </Button>
+      )}
+
+      {/* 进入校园按钮（更突出） */}
       <Link href="/campus" className="block">
         <Button
-          className="w-full h-11 text-base font-semibold bg-[#F97316] hover:bg-[#EA580C] text-white"
+          className="w-full h-12 text-base font-bold bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl shadow-lg shadow-[#F97316]/20 transition-all active:scale-[0.98]"
         >
-          <MapPin className="size-4" />
+          <MapPin className="size-5" />
           进入校园
         </Button>
       </Link>

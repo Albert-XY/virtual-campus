@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+function getServerTimeNow(): string {
+  const now = new Date()
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+}
+
 // GET /api/sleep/today - 获取今日睡眠记录
 export async function GET(request: Request) {
   try {
@@ -93,7 +98,9 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/sleep/checkin - 晚安打卡
+// POST /api/sleep - 打卡
+// 晚安打卡: body = {} (自动使用服务器当前时间)
+// 早安打卡: body = { action: 'wakeup' } (自动使用服务器当前时间)
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
@@ -107,25 +114,17 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => null)
-    if (!body) {
-      return NextResponse.json({ error: '请求格式不正确' }, { status: 400 })
-    }
-    const { action, sleep_time, wake_time } = body
+    const { action } = body ?? {}
 
     if (action === 'wakeup') {
-      // 早安打卡：更新今日 sleep_logs 的 wake_time
-      if (!wake_time) {
-        return NextResponse.json(
-          { error: '请提供起床时间' },
-          { status: 400 }
-        )
-      }
+      // 早安打卡：使用服务器当前时间
+      const wake_time = getServerTimeNow()
 
       const today = new Date().toISOString().split('T')[0]
 
       const { data: existingLog, error: findError } = await supabase
         .from('sleep_logs')
-        .select('id')
+        .select('id, wake_time')
         .eq('user_id', user.id)
         .eq('log_date', today)
         .single()
@@ -138,19 +137,11 @@ export async function POST(request: Request) {
       }
 
       // 检查是否已经起床打卡
-      if (existingLog) {
-        const { data: fullLog } = await supabase
-          .from('sleep_logs')
-          .select('wake_time')
-          .eq('id', existingLog.id)
-          .single()
-
-        if (fullLog && fullLog.wake_time && fullLog.wake_time !== '') {
-          return NextResponse.json(
-            { error: '今日已完成起床打卡' },
-            { status: 409 }
-          )
-        }
+      if (existingLog.wake_time && existingLog.wake_time !== '') {
+        return NextResponse.json(
+          { error: '今日已完成起床打卡' },
+          { status: 409 }
+        )
       }
 
       const { data: log, error: updateError } = await supabase
@@ -168,22 +159,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ log })
     }
 
-    // 晚安打卡
-    if (!sleep_time) {
-      return NextResponse.json(
-        { error: '请提供入睡时间' },
-        { status: 400 }
-      )
-    }
-
-    // 验证时间格式
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
-    if (!timeRegex.test(sleep_time)) {
-      return NextResponse.json(
-        { error: '时间格式不正确，请使用 HH:MM 格式' },
-        { status: 400 }
-      )
-    }
+    // 晚安打卡：使用服务器当前时间
+    const sleep_time = getServerTimeNow()
 
     const today = new Date().toISOString().split('T')[0]
 

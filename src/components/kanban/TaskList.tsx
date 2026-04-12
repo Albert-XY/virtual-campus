@@ -110,6 +110,32 @@ export default function TaskList({ tasks, onRefresh, onOpenScene }: TaskListProp
       }
 
       toast.success('任务已完成！')
+
+      // 获取即时洞察
+      try {
+        const task = tasks.find((t) => t.id === taskId)
+        const insightParams = new URLSearchParams({
+          type: 'task_complete',
+          subject: task?.subject || '',
+          estimated_min: String(task?.estimated_minutes || 0),
+          actual_min: String(minutes),
+        })
+        const insightRes = await fetch(`/api/insights?${insightParams}`)
+        if (insightRes.ok) {
+          const { insights } = await insightRes.json()
+          if (insights.length > 0) {
+            // 延迟显示洞察，不覆盖成功 toast
+            setTimeout(() => {
+              insights.forEach((text: string, i: number) => {
+                setTimeout(() => toast.info(text), i * 800)
+              })
+            }, 600)
+          }
+        }
+      } catch {
+        // 洞察获取失败不影响主流程
+      }
+
       setActualMinutes('')
       setAccuracyRate(80)
       setCompletingId(null)

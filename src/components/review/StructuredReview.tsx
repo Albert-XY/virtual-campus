@@ -212,6 +212,24 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
       }
 
       toast.success(`${periodLabel}提交成功！`)
+
+      // 获取即时洞察
+      try {
+        const insightRes = await fetch('/api/insights?type=review_submit')
+        if (insightRes.ok) {
+          const { insights } = await insightRes.json()
+          if (insights.length > 0) {
+            setTimeout(() => {
+              insights.forEach((text: string, i: number) => {
+                setTimeout(() => toast.info(text), i * 800)
+              })
+            }, 600)
+          }
+        }
+      } catch {
+        // 洞察获取失败不影响主流程
+      }
+
       // Refresh to show submitted state
       await fetchReview()
     } catch {

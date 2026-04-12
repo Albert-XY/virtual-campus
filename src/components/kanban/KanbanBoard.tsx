@@ -153,6 +153,24 @@ export default function KanbanBoard() {
       }
 
       toast.success('规划创建成功！')
+
+      // 获取规划洞察
+      try {
+        const insightRes = await fetch('/api/insights?type=plan_create')
+        if (insightRes.ok) {
+          const { insights } = await insightRes.json()
+          if (insights.length > 0) {
+            setTimeout(() => {
+              insights.forEach((text: string, i: number) => {
+                setTimeout(() => toast.info(text), i * 800)
+              })
+            }, 600)
+          }
+        }
+      } catch {
+        // 洞察获取失败不影响主流程
+      }
+
       await fetchData()
     } catch {
       toast.error('网络错误，请重试')

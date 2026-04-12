@@ -206,7 +206,8 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('创建学习目标失败:', error)
-      return NextResponse.json({ error: '创建学习目标失败' }, { status: 500 })
+      console.error('插入数据:', JSON.stringify(insertData))
+      return NextResponse.json({ error: `创建失败: ${error.message}` }, { status: 500 })
     }
 
     return NextResponse.json({ goal }, { status: 201 })

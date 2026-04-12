@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   GUIDE_STEPS,
   markGuideCompleted,
@@ -15,7 +16,6 @@ interface GuideContextValue {
   nextStep: () => void
   prevStep: () => void
   skipGuide: () => void
-  goToStep: (index: number) => void
 }
 
 const GuideContext = createContext<GuideContextValue>({
@@ -25,76 +25,78 @@ const GuideContext = createContext<GuideContextValue>({
   nextStep: () => {},
   prevStep: () => {},
   skipGuide: () => {},
-  goToStep: () => {},
 })
 
 export function useGuide() {
   return useContext(GuideContext)
 }
 
-// 步骤到页面的映射，用于判断当前页面应该显示哪个步骤
+// 步骤到页面的映射
 const STEP_PAGE_MAP: Record<number, string> = {
-  0: '/today',   // welcome
-  1: '/today',   // today-status
-  2: '/today',   // nav-plan (底部导航在所有页面都可见)
-  3: '/dashboard', // plan-form
-  4: '/dashboard', // plan-submit
-  5: '/campus',  // nav-campus
-  6: '/campus',  // campus-library
-  7: '/campus',  // campus-study
-  8: '/campus',  // campus-dorm
-  9: '/today',   // nav-points (底部导航)
-  10: '/today',  // review-reminder
-  11: '/profile', // complete - nav-profile
+  0: '/today',
+  1: '/today',
+  2: '/today',    // nav-plan（底部导航，所有页面可见）
+  3: '/dashboard',
+  4: '/dashboard',
+  5: '/campus',
+  6: '/campus',
+  7: '/campus',
+  8: '/campus',
+  9: '/today',    // nav-points（底部导航）
+  10: '/today',
+  11: '/profile',
 }
 
 export function GuideProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [currentPath, setCurrentPath] = useState('')
   const skipCalledRef = useRef(false)
+  const isNavigatingRef = useRef(false)
+  const router = useRouter()
 
-  // 监听路由变化
-  useEffect(() => {
-    const handlePathChange = () => {
-      setCurrentPath(window.location.pathname)
-    }
-
-    // 初始设置
-    handlePathChange()
-
-    // 使用 popstate 监听浏览器前进后退
-    window.addEventListener('popstate', handlePathChange)
-
-    // 使用 MutationObserver 监听 DOM 变化来检测路由变化
-    // Next.js App Router 使用 pushState
-    const originalPushState = history.pushState
-    const originalReplaceState = history.replaceState
-
-    history.pushState = function (...args) {
-      originalPushState.apply(this, args)
-      setTimeout(handlePathChange, 50)
-    }
-
-    history.replaceState = function (...args) {
-      originalReplaceState.apply(this, args)
-      setTimeout(handlePathChange, 50)
-    }
-
-    return () => {
-      window.removeEventListener('popstate', handlePathChange)
-      history.pushState = originalPushState
-      history.replaceState = originalReplaceState
-    }
+  // 获取步骤对应的页面路径
+  const getStepPage = useCallback((stepIndex: number): string => {
+    return STEP_PAGE_MAP[stepIndex] || '/today'
   }, [])
 
+  // 导航到步骤对应的页面
+  const navigateToStepPage = useCallback((stepIndex: number) => {
+    const targetPage = getStepPage(stepIndex)
+    const currentPath = window.location.pathname
+
+    // 底部导航步骤（2=nav-plan, 9=nav-points）在所有主页面都可见
+    const isNavStep = stepIndex === 2 || stepIndex === 9
+    const isMainPage = currentPath.startsWith('/today') ||
+                       currentPath.startsWith('/dashboard') ||
+                       currentPath.startsWith('/campus') ||
+                       currentPath.startsWith('/profile')
+
+    if (isNavStep && isMainPage) {
+      // 不需要跳转，当前页面就能看到底部导航
+      return
+    }
+
+    if (!currentPath.startsWith(targetPage)) {
+      isNavigatingRef.current = true
+      router.push(targetPage)
+    }
+  }, [getStepPage, router])
+
   const startGuide = useCallback(() => {
-    // 每次手动启动都从第0步开始
     setCurrentStep(0)
     setCurrentStepIndex(0)
     setIsActive(true)
     skipCalledRef.current = false
-  }, [])
+    isNavigatingRef.current = false
+
+    // 确保在正确的页面
+    const targetPage = getStepPage(0)
+    const currentPath = window.location.pathname
+    if (!currentPath.startsWith(targetPage)) {
+      isNavigatingRef.current = true
+      router.push(targetPage)
+    }
+  }, [getStepPage, router])
 
   const nextStep = useCallback(() => {
     setCurrentStep((prev) => {
@@ -106,18 +108,22 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         return prev
       }
       setCurrentStepIndex(next)
+      // 导航到下一步对应的页面
+      navigateToStepPage(next)
       return next
     })
-  }, [])
+  }, [navigateToStepPage])
 
   const prevStep = useCallback(() => {
     setCurrentStep((prev) => {
       if (prev <= 0) return prev
       const back = prev - 1
       setCurrentStepIndex(back)
+      // 导航到上一步对应的页面
+      navigateToStepPage(back)
       return back
     })
-  }, [])
+  }, [navigateToStepPage])
 
   const skipGuide = useCallback(() => {
     if (skipCalledRef.current) return
@@ -127,69 +133,26 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     setIsActive(false)
   }, [])
 
-  const goToStep = useCallback((index: number) => {
-    if (index >= 0 && index < GUIDE_STEPS.length) {
-      setCurrentStep(index)
-      setCurrentStepIndex(index)
-    }
-  }, [])
-
-  // 当路由变化时，自动跳转到对应页面的步骤
-  useEffect(() => {
-    if (!isActive || !currentPath) return
-
-    // 查找当前路径对应的步骤
-    const matchingSteps = Object.entries(STEP_PAGE_MAP)
-      .filter(([, path]) => {
-        // 底部导航步骤在所有 (main) 页面都可见
-        if (path === '/today' && (currentStep === 2 || currentStep === 9)) {
-          return currentPath.startsWith('/today') ||
-                 currentPath.startsWith('/dashboard') ||
-                 currentPath.startsWith('/campus') ||
-                 currentPath.startsWith('/profile')
-        }
-        return currentPath.startsWith(path)
-      })
-      .map(([stepStr]) => parseInt(stepStr, 10))
-
-    if (matchingSteps.length > 0) {
-      // 找到最接近当前步骤的匹配步骤
-      const closestStep = matchingSteps.reduce((closest, step) => {
-        if (step >= currentStep) return step
-        return closest
-      }, matchingSteps[0])
-
-      if (closestStep !== currentStep) {
-        setCurrentStep(closestStep)
-        setCurrentStepIndex(closestStep)
-      }
-    }
-  }, [isActive, currentPath, currentStep])
-
-  // 检查目标元素是否存在，如果不存在则自动跳过
+  // 当步骤变化且目标元素不存在时，等待页面导航完成后重试
   useEffect(() => {
     if (!isActive) return
 
     const step = GUIDE_STEPS[currentStep]
     if (!step) return
 
-    // 给页面一点时间渲染
-    const timer = setTimeout(() => {
+    // 如果正在导航中，等待一下再检查
+    const checkTarget = () => {
       const targetEl = document.getElementById(step.targetId)
-      if (!targetEl) {
-        // 目标元素不在当前页面，自动前进到下一步
-        const next = currentStep + 1
-        if (next >= GUIDE_STEPS.length) {
-          markGuideCompleted()
-          setCurrentStepIndex(0)
-          setIsActive(false)
-        } else {
-          setCurrentStep(next)
-          setCurrentStepIndex(next)
-        }
+      if (!targetEl && !isNavigatingRef.current) {
+        // 目标元素不存在且不在导航中，说明页面有问题
+        // 不自动跳过，等用户手动操作
+        console.warn(`Guide: target element #${step.targetId} not found for step ${currentStep}`)
       }
-    }, 500)
+      isNavigatingRef.current = false
+    }
 
+    // 导航后等待页面渲染
+    const timer = setTimeout(checkTarget, 800)
     return () => clearTimeout(timer)
   }, [isActive, currentStep])
 
@@ -202,7 +165,6 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         nextStep,
         prevStep,
         skipGuide,
-        goToStep,
       }}
     >
       {children}

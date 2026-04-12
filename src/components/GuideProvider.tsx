@@ -15,6 +15,7 @@ interface GuideContextValue {
   currentStep: number
   startGuide: () => void
   nextStep: () => void
+  prevStep: () => void
   skipGuide: () => void
   goToStep: (index: number) => void
 }
@@ -24,6 +25,7 @@ const GuideContext = createContext<GuideContextValue>({
   currentStep: 0,
   startGuide: () => {},
   nextStep: () => {},
+  prevStep: () => {},
   skipGuide: () => {},
   goToStep: () => {},
 })
@@ -89,8 +91,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const startGuide = useCallback(() => {
-    const savedStep = getCurrentStepIndex()
-    setCurrentStep(savedStep)
+    // 每次手动启动都从第0步开始
+    setCurrentStep(0)
+    setCurrentStepIndex(0)
     setIsActive(true)
     skipCalledRef.current = false
   }, [])
@@ -99,7 +102,6 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     setCurrentStep((prev) => {
       const next = prev + 1
       if (next >= GUIDE_STEPS.length) {
-        // 引导完成
         markGuideCompleted()
         setCurrentStepIndex(0)
         setIsActive(false)
@@ -107,6 +109,15 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       }
       setCurrentStepIndex(next)
       return next
+    })
+  }, [])
+
+  const prevStep = useCallback(() => {
+    setCurrentStep((prev) => {
+      if (prev <= 0) return prev
+      const back = prev - 1
+      setCurrentStepIndex(back)
+      return back
     })
   }, [])
 
@@ -191,6 +202,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         currentStep,
         startGuide,
         nextStep,
+        prevStep,
         skipGuide,
         goToStep,
       }}
@@ -200,6 +212,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         <GuideOverlay
           currentStep={currentStep}
           onNext={nextStep}
+          onPrev={prevStep}
           onSkip={skipGuide}
         />
       )}

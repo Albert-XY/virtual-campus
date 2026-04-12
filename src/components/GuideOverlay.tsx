@@ -6,6 +6,7 @@ import { GUIDE_STEPS, type GuideStep } from '@/lib/guide'
 interface GuideOverlayProps {
   currentStep: number
   onNext: () => void
+  onPrev: () => void
   onSkip: () => void
 }
 
@@ -19,7 +20,7 @@ interface TargetRect {
 const HIGHLIGHT_PADDING = 6
 const BUBBLE_OFFSET = 12
 
-export default function GuideOverlay({ currentStep, onNext, onSkip }: GuideOverlayProps) {
+export default function GuideOverlay({ currentStep, onNext, onPrev, onSkip }: GuideOverlayProps) {
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
   const [visible, setVisible] = useState(false)
   const [bubbleStyle, setBubbleStyle] = useState<React.CSSProperties>({})
@@ -196,13 +197,24 @@ export default function GuideOverlay({ currentStep, onNext, onSkip }: GuideOverl
             >
               跳过引导
             </button>
-            <button
-              onClick={onNext}
-              className="px-4 py-1.5 text-sm font-medium text-white rounded-lg transition-all active:scale-95"
-              style={{ backgroundColor: 'var(--accent-color, #3b82f6)' }}
-            >
-              下一步
-            </button>
+            <div className="flex items-center gap-2">
+              {currentStep > 0 && (
+                <button
+                  onClick={onPrev}
+                  className="px-3 py-1.5 text-sm rounded-lg transition-all active:scale-95"
+                  style={{ color: 'var(--text-secondary, #666)', border: '1px solid var(--border-color, #e5e7eb)' }}
+                >
+                  上一步
+                </button>
+              )}
+              <button
+                onClick={onNext}
+                className="px-4 py-1.5 text-sm font-medium text-white rounded-lg transition-all active:scale-95"
+                style={{ backgroundColor: 'var(--accent-color, #3b82f6)' }}
+              >
+                下一步
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -295,14 +307,23 @@ export default function GuideOverlay({ currentStep, onNext, onSkip }: GuideOverl
           >
             第 {currentStep + 1}/{GUIDE_STEPS.length} 步
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={onSkip}
               className="text-xs transition-colors hover:underline"
               style={{ color: 'var(--text-muted, #999)' }}
             >
-              跳过引导
+              跳过
             </button>
+            {currentStep > 0 && (
+              <button
+                onClick={onPrev}
+                className="px-3 py-1.5 text-xs rounded-lg transition-all active:scale-95"
+                style={{ color: 'var(--text-secondary, #666)', border: '1px solid var(--border-color, #e5e7eb)' }}
+              >
+                上一步
+              </button>
+            )}
             <button
               onClick={onNext}
               className="px-4 py-1.5 text-sm font-medium text-white rounded-lg transition-all active:scale-95"

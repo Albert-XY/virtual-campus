@@ -33,13 +33,17 @@ export default function MainLayout({
           setPoints(profile.total_points)
           setNickname(profile.nickname || '同学')
         }
-        // 获取未读播报数量
-        const { count } = await supabase
-          .from('broadcasts')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_published', true)
-          .not('broadcast_views', 'broadcast_id', { user_id: user.id })
-        setUnreadBroadcasts(count || 0)
+        // 获取未读播报数量（容错：表不存在时跳过）
+        try {
+          const { count } = await supabase
+            .from('broadcasts')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_published', true)
+            .not('broadcast_views', 'broadcast_id', { user_id: user.id })
+          setUnreadBroadcasts(count || 0)
+        } catch {
+          // broadcasts 表可能尚未创建，忽略
+        }
       }
     }
     fetchData()

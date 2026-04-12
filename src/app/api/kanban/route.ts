@@ -195,26 +195,30 @@ export async function GET() {
     }
 
     // ----------------------------------------------------------
-    // 7. 未读播报数量
+    // 7. 未读播报数量（容错：表不存在时跳过）
     // ----------------------------------------------------------
-    const { data: publishedBroadcasts } = await supabase
-      .from('broadcasts')
-      .select('id')
-      .eq('is_published', true)
-      .lt('published_at', `${today}T23:59:59`)
-
-    const broadcastIds = (publishedBroadcasts ?? []).map((b) => b.id)
-
     let unreadBroadcasts = 0
-    if (broadcastIds.length > 0) {
-      const { data: views } = await supabase
-        .from('broadcast_views')
-        .select('broadcast_id')
-        .eq('user_id', user.id)
-        .in('broadcast_id', broadcastIds)
+    try {
+      const { data: publishedBroadcasts } = await supabase
+        .from('broadcasts')
+        .select('id')
+        .eq('is_published', true)
+        .lt('published_at', `${today}T23:59:59`)
 
-      const viewedIds = new Set((views ?? []).map((v) => v.broadcast_id))
-      unreadBroadcasts = broadcastIds.filter((id) => !viewedIds.has(id)).length
+      const broadcastIds = (publishedBroadcasts ?? []).map((b) => b.id)
+
+      if (broadcastIds.length > 0) {
+        const { data: views } = await supabase
+          .from('broadcast_views')
+          .select('broadcast_id')
+          .eq('user_id', user.id)
+          .in('broadcast_id', broadcastIds)
+
+        const viewedIds = new Set((views ?? []).map((v) => v.broadcast_id))
+        unreadBroadcasts = broadcastIds.filter((id) => !viewedIds.has(id)).length
+      }
+    } catch {
+      // broadcasts 表可能尚未创建，忽略
     }
 
     // ----------------------------------------------------------

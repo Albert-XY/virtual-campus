@@ -310,6 +310,12 @@ export default function CampusPage() {
                 {isLocked ? (
                   /* Locked state */
                   <div
+                    id={
+                      scene.id === 'library' ? 'guide-campus-library' :
+                      scene.id === 'study-room' ? 'guide-campus-study' :
+                      scene.id === 'dormitory' ? 'guide-campus-dorm' :
+                      undefined
+                    }
                     className="relative overflow-hidden p-4 opacity-60 transition-all duration-200"
                     style={{
                       borderRadius: 'var(--radius-lg)',
@@ -344,6 +350,12 @@ export default function CampusPage() {
                   /* Available state */
                   <Link href={scene.href} className="block">
                     <div
+                      id={
+                        scene.id === 'library' ? 'guide-campus-library' :
+                        scene.id === 'study-room' ? 'guide-campus-study' :
+                        scene.id === 'dormitory' ? 'guide-campus-dorm' :
+                        undefined
+                      }
                       className="relative overflow-hidden p-4 transition-all duration-200 active:scale-[0.97]"
                       style={{
                         borderRadius: 'var(--radius-lg)',

@@ -127,7 +127,7 @@ export default function DashboardPage() {
               onReplan={handleReplan}
             />
           ) : (
-            <div className="space-y-6">
+            <div id="guide-plan-form" className="space-y-6">
               <PlanForm onSuccess={handlePlanCreated} />
             </div>
           )}

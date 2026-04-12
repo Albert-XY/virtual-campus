@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { isGuideCompleted } from '@/lib/guide'
+import { useGuide } from '@/components/GuideProvider'
 import {
   Loader2,
   Zap,
@@ -117,6 +119,7 @@ function getElapsedMinutes(isoStr: string): number {
 // ============================================================
 export default function TodayPage() {
   const router = useRouter()
+  const { startGuide, isActive } = useGuide()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<TodayData | null>(null)
   const [nickname, setNickname] = useState('')
@@ -174,6 +177,13 @@ export default function TodayPage() {
       }
 
       setLoading(false)
+
+      // 首次登录自动触发引导
+      if (!isGuideCompleted() && !isActive) {
+        setTimeout(() => {
+          startGuide()
+        }, 800)
+      }
     }
 
     init()
@@ -293,7 +303,7 @@ export default function TodayPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-6 space-y-5">
       {/* Top greeting */}
-      <div className="flex items-center justify-between">
+      <div id="guide-today-greeting" className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold" style={{ color: 'var(--accent-color)', fontFamily: 'var(--font-display)' }}>
             {greeting.emoji} {greeting.text}，{nickname || '同学'}
@@ -326,7 +336,7 @@ export default function TodayPage() {
       {!data.has_plan && (
         <>
           {/* Hero card */}
-          <div
+          <div id="guide-today-status"
             className="p-6 text-white transition-all duration-300"
             style={{
               borderRadius: 'var(--radius-lg)',
@@ -602,7 +612,7 @@ export default function TodayPage() {
 
           {/* Daily review card */}
           {reviewStatus && (
-            <Card>
+            <Card id="guide-review-area">
               <CardContent className="pt-5">
                 {reviewStatus.has_review && reviewStatus.review ? (
                   <div className="space-y-2">

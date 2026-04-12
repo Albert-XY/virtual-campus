@@ -634,6 +634,7 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
 
       {/* 提交按钮 */}
       <Button
+        id="guide-plan-submit"
         onClick={handleSubmit}
         disabled={submitting}
         className="w-full h-12 text-base font-bold text-white rounded-xl shadow-lg transition-all active:scale-[0.98]"

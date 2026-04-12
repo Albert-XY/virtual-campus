@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { resetGuide } from '@/lib/guide'
+import { useGuide } from '@/components/GuideProvider'
 import {
   Card,
   CardContent,
@@ -20,14 +22,24 @@ import {
   ChevronRight,
   Palette,
   Check,
+  RotateCcw,
 } from 'lucide-react'
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
+  const { startGuide } = useGuide()
 
   const handleThemeChange = (themeId: ThemeId) => {
     setTheme(themeId)
     toast.success(`已切换到「${themes[themeId].name}」主题`)
+  }
+
+  const handleResetGuide = () => {
+    resetGuide()
+    toast.success('引导已重置，即将开始')
+    setTimeout(() => {
+      startGuide()
+    }, 500)
   }
 
   return (
@@ -200,6 +212,33 @@ export default function SettingsPage() {
           <div className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             虚拟校园是一款面向学生的自主学习平台，通过游戏化的方式帮助学生养成良好学习习惯。包含每日规划、番茄钟专注、场景打卡、睡眠管理等核心功能。
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Guide reset */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RotateCcw className="size-4" style={{ color: 'var(--accent-color)' }} />
+            新手引导
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <button
+            onClick={handleResetGuide}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
+            style={{
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            <RotateCcw className="size-4" />
+            重新查看引导教程
+          </button>
+          <p className="mt-2 text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+            重新体验新手引导，了解平台各项功能
+          </p>
         </CardContent>
       </Card>
     </div>

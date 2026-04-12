@@ -6,11 +6,11 @@ import { usePathname } from 'next/navigation';
 import { Home, Map, ClipboardList, Star, User } from 'lucide-react';
 
 const navItems = [
-  { href: '/today', label: '今日', icon: Home },
-  { href: '/campus', label: '校园', icon: Map },
-  { href: '/dashboard', label: '规划', icon: ClipboardList },
-  { href: '/profile/points', label: '积分', icon: Star },
-  { href: '/profile', label: '我的', icon: User },
+  { href: '/today', label: '今日', icon: Home, guideId: 'guide-nav-today' },
+  { href: '/campus', label: '校园', icon: Map, guideId: 'guide-nav-campus' },
+  { href: '/dashboard', label: '规划', icon: ClipboardList, guideId: 'guide-nav-plan' },
+  { href: '/profile/points', label: '积分', icon: Star, guideId: 'guide-nav-points' },
+  { href: '/profile', label: '我的', icon: User, guideId: 'guide-nav-profile' },
 ];
 
 export default function BottomNav() {
@@ -61,6 +61,7 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              id={item.guideId}
               className="relative flex flex-1 flex-col items-center gap-0.5 py-1 text-xs transition-colors"
               style={{
                 color: isActive

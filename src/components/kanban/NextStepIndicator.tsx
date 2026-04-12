@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import {
+  Target,
+  ListTree,
   ClipboardList,
   Play,
   CheckCircle2,
@@ -9,6 +11,7 @@ import {
   Moon,
   Sparkles,
   ArrowRight,
+  BookOpen,
 } from 'lucide-react'
 
 // ============================================================
@@ -32,27 +35,61 @@ interface NextStepIndicatorProps {
   hasDailyReview: boolean
   hasSleepLog: boolean
   streakDays: number
+  hasMonthlyGoal: boolean
+  hasWeeklyGoal: boolean
   onQuickPlan: () => void
   onOpenScene: () => void
 }
 
 // ============================================================
-// 计算下一步
+// 工作流状态判断（从上到下，目标驱动日计划）
 // ============================================================
 function computeNextStep(props: NextStepIndicatorProps): NextStep {
-  const { hasPlan, tasks, activeScene, hasDailyReview, hasSleepLog, streakDays } = props
+  const {
+    hasPlan, tasks, activeScene, hasDailyReview, hasSleepLog,
+    streakDays, hasMonthlyGoal, hasWeeklyGoal,
+  } = props
   const hour = new Date().getHours()
 
-  // 没有规划
-  if (!hasPlan) {
+  // ── 第0步：没有任何目标，引导设置月目标 ──
+  if (!hasMonthlyGoal && !hasWeeklyGoal && !hasPlan) {
+    return {
+      id: 'setup-monthly-goal',
+      icon: <Target className="size-5" />,
+      text: '设定这个月的学习目标',
+      subtext: '有目标才知道每天该做什么',
+      action: 'link',
+      actionLabel: '设置目标',
+      actionHref: '/goals',
+      priority: 'high',
+    }
+  }
+
+  // ── 第1步：有月目标，没周目标，引导拆解 ──
+  if (hasMonthlyGoal && !hasWeeklyGoal && !hasPlan) {
+    return {
+      id: 'setup-weekly-goal',
+      icon: <ListTree className="size-5" />,
+      text: '把月目标拆解成这周的计划',
+      subtext: '每周完成一小部分，月目标自然达成',
+      action: 'link',
+      actionLabel: '设置周目标',
+      actionHref: '/goals',
+      priority: 'high',
+    }
+  }
+
+  // ── 第2步：有周目标，没日计划，引导规划 ──
+  if ((hasMonthlyGoal || hasWeeklyGoal) && !hasPlan) {
     if (hour >= 9) {
       return {
-        id: 'plan-urgent',
+        id: 'plan-from-goal',
         icon: <ClipboardList className="size-5" />,
-        text: '新的一天开始了，先规划一下今天吧',
-        subtext: streakDays > 0 ? `已连续规划 ${streakDays} 天，继续保持` : undefined,
-        action: 'quick_plan',
-        actionLabel: '快速规划',
+        text: '今天要做什么？从周目标拆解',
+        subtext: hasWeeklyGoal ? '根据周目标规划今天的任务' : '先设定周目标，再规划今天',
+        action: hasWeeklyGoal ? 'quick_plan' : 'link',
+        actionLabel: hasWeeklyGoal ? '开始规划' : '设置周目标',
+        actionHref: hasWeeklyGoal ? undefined : '/goals',
         priority: 'high',
       }
     }
@@ -60,25 +97,24 @@ function computeNextStep(props: NextStepIndicatorProps): NextStep {
       id: 'plan-morning',
       icon: <ClipboardList className="size-5" />,
       text: '新的一天，准备好了吗',
-      subtext: '花1分钟规划今天的学习',
+      subtext: '根据目标规划今天的学习',
       action: 'quick_plan',
       actionLabel: '开始规划',
       priority: 'normal',
     }
   }
 
-  // 有规划，计算任务状态
+  // ── 第3步：有日计划，没开始执行 ──
   const totalTasks = tasks.length
   const completedTasks = tasks.filter((t) => t.status === 'completed').length
   const pendingTasks = tasks.filter((t) => t.status === 'pending').length
   const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length
 
-  // 有规划，没进入场景，有待完成任务
-  if (!activeScene && (pendingTasks > 0 || inProgressTasks > 0)) {
+  if (hasPlan && !activeScene && (pendingTasks > 0 || inProgressTasks > 0)) {
     return {
       id: 'start-scene',
       icon: <Play className="size-5" />,
-      text: '开始今天的第一个任务吧',
+      text: '开始今天的第一个任务',
       subtext: `今日进度 ${completedTasks}/${totalTasks}`,
       action: 'open_scene',
       actionLabel: '进入学习',
@@ -86,7 +122,7 @@ function computeNextStep(props: NextStepIndicatorProps): NextStep {
     }
   }
 
-  // 在场景中，有未完成任务
+  // ── 第4步：正在执行 ──
   if (activeScene && completedTasks < totalTasks) {
     return {
       id: 'continue-tasks',
@@ -97,7 +133,7 @@ function computeNextStep(props: NextStepIndicatorProps): NextStep {
     }
   }
 
-  // 所有任务完成，没写总结
+  // ── 第5步：任务完成，引导写总结 ──
   if (completedTasks === totalTasks && totalTasks > 0 && !hasDailyReview) {
     return {
       id: 'write-review',
@@ -111,7 +147,7 @@ function computeNextStep(props: NextStepIndicatorProps): NextStep {
     }
   }
 
-  // 总结写完，没打卡睡眠
+  // ── 第6步：总结写完，引导睡眠打卡 ──
   if (hasDailyReview && !hasSleepLog) {
     if (hour >= 21) {
       return {
@@ -137,7 +173,7 @@ function computeNextStep(props: NextStepIndicatorProps): NextStep {
     }
   }
 
-  // 全部完成
+  // ── 全部完成 ──
   return {
     id: 'all-done',
     icon: <Sparkles className="size-5" />,

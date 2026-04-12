@@ -54,6 +54,8 @@ interface KanbanData {
   }
   unread_broadcasts: number
   yesterday_plan: Record<string, unknown> | null
+  has_monthly_goal: boolean
+  has_weekly_goal: boolean
 }
 
 interface TaskItem {
@@ -155,6 +157,24 @@ export default function KanbanBoard() {
       }
     } catch (error) {
       console.error('获取看板数据失败:', error)
+    }
+
+    // Fetch goal status (non-blocking)
+    try {
+      const goalsRes = await fetch('/api/goals?active_only=true&period=monthly')
+      if (goalsRes.ok) {
+        const goalsJson = await goalsRes.json()
+        const hasMonthly = (goalsJson.goals ?? []).length > 0
+        const weeklyRes = await fetch('/api/goals?active_only=true&period=weekly')
+        let hasWeekly = false
+        if (weeklyRes.ok) {
+          const weeklyJson = await weeklyRes.json()
+          hasWeekly = (weeklyJson.goals ?? []).length > 0
+        }
+        setData(prev => prev ? { ...prev, has_monthly_goal: hasMonthly, has_weekly_goal: hasWeekly } : prev)
+      }
+    } catch {
+      // goals table may not exist yet
     }
   }, [])
 
@@ -418,6 +438,8 @@ export default function KanbanBoard() {
         hasDailyReview={data.todo_items.has_daily_review}
         hasSleepLog={data.todo_items.has_sleep_log}
         streakDays={data.todo_items.streak_days}
+        hasMonthlyGoal={data.has_monthly_goal}
+        hasWeeklyGoal={data.has_weekly_goal}
         onQuickPlan={handleQuickPlan}
         onOpenScene={() => handleOpenScene('library')}
       />

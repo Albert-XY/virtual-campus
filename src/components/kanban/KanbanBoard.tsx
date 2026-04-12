@@ -9,6 +9,9 @@ import PlanVsActual from './PlanVsActual'
 import TodoSection from './TodoSection'
 import SceneShortcuts from './SceneShortcuts'
 import QuickPlan from './QuickPlan'
+import NextStepIndicator from './NextStepIndicator'
+import ContextNudge from './ContextNudge'
+import MilestoneBar from './MilestoneBar'
 import TrendSection from '@/components/charts/TrendSection'
 import ScenePanel from '@/components/scene/ScenePanel'
 import LibraryPanel from '@/components/scene/LibraryPanel'
@@ -341,6 +344,28 @@ export default function KanbanBoard() {
         )}
       </div>
 
+      {/* Layer 1: Next step indicator */}
+      <NextStepIndicator
+        hasPlan={data.has_plan}
+        tasks={data.tasks as TaskItem[]}
+        activeScene={data.active_scene}
+        hasDailyReview={data.todo_items.has_daily_review}
+        hasSleepLog={data.todo_items.has_sleep_log}
+        streakDays={data.todo_items.streak_days}
+        onQuickPlan={handleQuickPlan}
+        onOpenScene={() => handleOpenScene('library')}
+      />
+
+      {/* Layer 2: Context-aware nudge */}
+      <ContextNudge
+        hasPlan={data.has_plan}
+        activeScene={data.active_scene}
+        hasDailyReview={data.todo_items.has_daily_review}
+        streakDays={data.todo_items.streak_days}
+        deviationRate={data.plan_vs_actual.deviation_rate}
+        todayPoints={data.today_points}
+      />
+
       {/* No plan state */}
       {!data.has_plan && (
         <QuickPlan
@@ -377,6 +402,14 @@ export default function KanbanBoard() {
           <TrendSection />
         </>
       )}
+
+      {/* Layer 3: Milestone bar */}
+      <MilestoneBar
+        streakDays={data.todo_items.streak_days}
+        todayPoints={data.today_points}
+        completionRate={data.plan_vs_actual.completion_rate}
+        deviationRate={data.plan_vs_actual.deviation_rate}
+      />
 
       {/* Todo section */}
       <TodoSection

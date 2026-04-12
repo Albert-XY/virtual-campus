@@ -2,11 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, ClipboardList } from 'lucide-react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import PlanForm from '@/components/PlanForm'
 import PlanSummary from '@/components/PlanSummary'
-import WeekPlanTab from '@/components/WeekPlanTab'
-import MonthPlanTab from '@/components/MonthPlanTab'
 import SummaryTab from '@/components/SummaryTab'
 import type { DailyPlan, Task } from '@/types'
 
@@ -15,7 +12,6 @@ export default function DashboardPage() {
   const [plan, setPlan] = useState<DailyPlan | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [isReplanning, setIsReplanning] = useState(false)
-  const [activeTab, setActiveTab] = useState('daily')
 
   const fetchPlan = useCallback(async () => {
     setLoading(true)
@@ -62,7 +58,7 @@ export default function DashboardPage() {
     )
   }
 
-  // 重新规划模式（日规划）
+  // 重新规划模式
   if (isReplanning && plan) {
     return (
       <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
@@ -109,45 +105,23 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Tab 切换 */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full mb-4">
-          <TabsTrigger value="daily">📅 日规划</TabsTrigger>
-          <TabsTrigger value="weekly">📆 周规划</TabsTrigger>
-          <TabsTrigger value="monthly">🗓️ 月规划</TabsTrigger>
-          <TabsTrigger value="summary">📝 总结</TabsTrigger>
-        </TabsList>
+      {/* 日规划 */}
+      {plan ? (
+        <PlanSummary
+          plan={plan}
+          tasks={tasks}
+          onReplan={handleReplan}
+        />
+      ) : (
+        <div id="guide-plan-form" className="space-y-6">
+          <PlanForm onSuccess={handlePlanCreated} />
+        </div>
+      )}
 
-        {/* 日规划 Tab */}
-        <TabsContent value="daily">
-          {plan ? (
-            <PlanSummary
-              plan={plan}
-              tasks={tasks}
-              onReplan={handleReplan}
-            />
-          ) : (
-            <div id="guide-plan-form" className="space-y-6">
-              <PlanForm onSuccess={handlePlanCreated} />
-            </div>
-          )}
-        </TabsContent>
-
-        {/* 周规划 Tab */}
-        <TabsContent value="weekly">
-          <WeekPlanTab />
-        </TabsContent>
-
-        {/* 月规划 Tab */}
-        <TabsContent value="monthly">
-          <MonthPlanTab />
-        </TabsContent>
-
-        {/* 总结 Tab */}
-        <TabsContent value="summary">
-          <SummaryTab />
-        </TabsContent>
-      </Tabs>
+      {/* 总结 */}
+      <div className="mt-8">
+        <SummaryTab />
+      </div>
     </div>
   )
 }

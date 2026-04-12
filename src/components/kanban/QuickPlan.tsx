@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Zap, ClipboardList, Copy, Loader2 } from 'lucide-react'
+import GoalGuard from '@/components/goals/GoalGuard'
 
 // ============================================================
 // Types
@@ -12,6 +13,8 @@ interface QuickPlanProps {
   onCopyYesterday: () => void
   quickPlanning: boolean
   copying: boolean
+  /** true if user has any monthly or weekly goal */
+  hasGoal?: boolean
 }
 
 // ============================================================
@@ -23,8 +26,16 @@ export default function QuickPlan({
   onCopyYesterday,
   quickPlanning,
   copying,
+  hasGoal = false,
 }: QuickPlanProps) {
   return (
+    <GoalGuard
+      action="create_daily_plan"
+      hasMonthlyGoal={hasGoal}
+      hasWeeklyGoal={false}
+      hasDailyPlan={false}
+      strict={false}
+    >
     <div className="space-y-4">
       {/* Hero 卡片 */}
       <div
@@ -145,5 +156,6 @@ export default function QuickPlan({
         </button>
       )}
     </div>
+    </GoalGuard>
   )
 }

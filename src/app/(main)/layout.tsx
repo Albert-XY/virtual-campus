@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Sidebar from '@/components/navigation/Sidebar'
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow'
 import { Star, Bell, Menu } from 'lucide-react'
 
 export default function MainLayout({
@@ -111,6 +112,7 @@ export default function MainLayout({
         userNickname={nickname}
         unreadBroadcasts={unreadBroadcasts}
       />
+      <OnboardingFlow />
     </ProtectedRoute>
   )
 }

@@ -465,6 +465,7 @@ export default function KanbanBoard() {
           onCopyYesterday={handleCopyYesterday}
           quickPlanning={quickPlanning}
           copying={copying}
+          hasGoal={data.has_monthly_goal || data.has_weekly_goal}
         />
       )}
 

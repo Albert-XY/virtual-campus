@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import GoalForm from '@/components/goals/GoalForm'
+import GoalGuard from '@/components/goals/GoalGuard'
 
 // ============================================================
 // Types
@@ -366,14 +367,22 @@ export default function GoalsPage() {
             </Button>
           )}
           {weeklyGoals.filter((g) => !g.parent_goal_id).length === 0 && (
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => handleCreateGoal('weekly')}
+            <GoalGuard
+              action="create_weekly"
+              hasMonthlyGoal={monthlyGoals.length > 0}
+              hasWeeklyGoal={false}
+              hasDailyPlan={true}
+              strict={false}
             >
-              <Plus className="size-4" />
-              创建周目标
-            </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => handleCreateGoal('weekly')}
+              >
+                <Plus className="size-4" />
+                创建周目标
+              </Button>
+            </GoalGuard>
           )}
         </div>
       )}

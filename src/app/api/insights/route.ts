@@ -207,6 +207,123 @@ export async function GET(request: Request) {
       }
     }
 
+    // ----------------------------------------------------------
+    // type=subject_history: 查询某科目历史平均用时（供 PlanForm 使用）
+    // ----------------------------------------------------------
+    if (type === 'subject_history' && subject) {
+      const { data: subjectTasks } = await supabase
+        .from('tasks')
+        .select('subject, estimated_minutes, actual_minutes, status')
+        .eq('user_id', user.id)
+        .eq('subject', subject)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (subjectTasks && subjectTasks.length >= 2) {
+        const avgActual = Math.round(
+          subjectTasks.reduce((s, t) => s + (t.actual_minutes || 0), 0) / subjectTasks.length
+        )
+        const avgEstimated = Math.round(
+          subjectTasks.reduce((s, t) => s + (t.estimated_minutes || 0), 0) / subjectTasks.length
+        )
+        const avgDeviation = avgEstimated > 0
+          ? Math.round(((avgActual - avgEstimated) / avgEstimated) * 100)
+          : 0
+
+        return NextResponse.json({
+          subject,
+          count: subjectTasks.length,
+          avg_actual: avgActual,
+          avg_estimated: avgEstimated,
+          avg_deviation: avgDeviation,
+          suggested_min: Math.max(15, Math.round(avgActual * 1.1 / 5) * 5), // 向上取整到5分钟，加10%缓冲
+        })
+      }
+
+      return NextResponse.json({ subject, count: 0 })
+    }
+
+    // ----------------------------------------------------------
+    // type=review_context: 获取总结上下文数据（供 StructuredReview 使用）
+    // ----------------------------------------------------------
+    if (type === 'review_context') {
+      const todayStr = new Date().toISOString().split('T')[0]
+
+      // 今日任务数据
+      const { data: todayPlan } = await supabase
+        .from('daily_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('plan_date', todayStr)
+        .single()
+
+      let todayTasks: Array<{ subject: string; topic: string; status: string; estimated_minutes: number; actual_minutes: number | null }> = []
+      if (todayPlan) {
+        const { data: tasks } = await supabase
+          .from('tasks')
+          .select('subject, topic, status, estimated_minutes, actual_minutes')
+          .eq('user_id', user.id)
+          .eq('plan_id', todayPlan.id)
+        todayTasks = tasks ?? []
+      }
+
+      // 找出超时最多的科目
+      const overTasks = todayTasks
+        .filter((t) => t.status === 'completed' && t.actual_minutes && t.estimated_minutes)
+        .map((t) => ({
+          subject: t.subject,
+          topic: t.topic,
+          overMinutes: t.actual_minutes! - t.estimated_minutes,
+          actualMinutes: t.actual_minutes!,
+          estimatedMinutes: t.estimated_minutes,
+        }))
+        .filter((t) => t.overMinutes > 0)
+        .sort((a, b) => b.overMinutes - a.overMinutes)
+
+      // 找出完成得快的科目
+      const fastTasks = todayTasks
+        .filter((t) => t.status === 'completed' && t.actual_minutes && t.estimated_minutes)
+        .map((t) => ({
+          subject: t.subject,
+          topic: t.topic,
+          savedMinutes: t.estimated_minutes - t.actual_minutes!,
+          actualMinutes: t.actual_minutes!,
+          estimatedMinutes: t.estimated_minutes,
+        }))
+        .filter((t) => t.savedMinutes > 0)
+        .sort((a, b) => b.savedMinutes - a.savedMinutes)
+
+      // 未完成的任务
+      const unfinishedTasks = todayTasks.filter((t) => t.status !== 'completed' && (t.subject || t.topic))
+
+      // 前一天总结的偏差率
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      const yesterdayStr = yesterday.toISOString().split('T')[0]
+      const { data: yesterdayReview } = await supabase
+        .from('reviews')
+        .select('deviation_rate, tasks_completed, tasks_total')
+        .eq('user_id', user.id)
+        .eq('period', 'daily')
+        .eq('period_start', yesterdayStr)
+        .single()
+
+      return NextResponse.json({
+        todayTasks: {
+          total: todayTasks.length,
+          completed: todayTasks.filter((t) => t.status === 'completed').length,
+          overTasks: overTasks.slice(0, 3),
+          fastTasks: fastTasks.slice(0, 3),
+          unfinishedTasks,
+        },
+        yesterdayReview: yesterdayReview
+          ? { deviation_rate: yesterdayReview.deviation_rate, completion_rate: yesterdayReview.tasks_total > 0 ? Math.round((yesterdayReview.tasks_completed / yesterdayReview.tasks_total) * 100) : 0 }
+          : null,
+        streakDays,
+      })
+    }
+
     return NextResponse.json({ insights })
   } catch (error) {
     console.error('获取洞察失败:', error)

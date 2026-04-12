@@ -138,7 +138,66 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
   const [freeText, setFreeText] = useState('')
   const [tomorrowPlan, setTomorrowPlan] = useState('')
 
-  const questions = PERIOD_QUESTIONS[period] || []
+  // Review context data (for dynamic questions)
+  const [reviewContext, setReviewContext] = useState<{
+    todayTasks: {
+      total: number
+      completed: number
+      overTasks: Array<{ subject: string; topic: string; overMinutes: number; estimatedMinutes: number; actualMinutes: number }>
+      fastTasks: Array<{ subject: string; topic: string; savedMinutes: number; estimatedMinutes: number; actualMinutes: number }>
+      unfinishedTasks: Array<{ subject: string; topic: string }>
+    }
+    yesterdayReview: { deviation_rate: number; completion_rate: number } | null
+    streakDays: number
+  } | null>(null)
+
+  // Dynamic questions based on context
+  const getDynamicQuestions = () => {
+    const baseQuestions = PERIOD_QUESTIONS[period] || []
+    if (period !== 'daily' || !reviewContext) return baseQuestions
+
+    const ctx = reviewContext.todayTasks
+    const dynamic = [...baseQuestions]
+
+    const goodIdx = dynamic.findIndex(q => q.key === 'good_tasks')
+    if (goodIdx >= 0 && ctx.fastTasks.length > 0) {
+      const fast = ctx.fastTasks[0]
+      dynamic[goodIdx] = {
+        ...dynamic[goodIdx],
+        placeholder: `例如：${fast.subject}（${fast.topic}）比预估快了${fast.savedMinutes}分钟，因为...`,
+      }
+    }
+
+    const unfinishedIdx = dynamic.findIndex(q => q.key === 'unfinished_tasks')
+    if (unfinishedIdx >= 0) {
+      if (ctx.unfinishedTasks.length > 0) {
+        const names = ctx.unfinishedTasks.map(t => t.subject).join('、')
+        dynamic[unfinishedIdx] = {
+          ...dynamic[unfinishedIdx],
+          placeholder: `提示：${names}还没有完成，原因是...`,
+        }
+      } else if (ctx.overTasks.length > 0) {
+        const over = ctx.overTasks[0]
+        dynamic[unfinishedIdx] = {
+          ...dynamic[unfinishedIdx],
+          placeholder: `例如：${over.subject}（${over.topic}）预估${over.estimatedMinutes}分钟但用了${over.actualMinutes}分钟...`,
+        }
+      }
+    }
+
+    const adjustIdx = dynamic.findIndex(q => q.key === 'adjustments')
+    if (adjustIdx >= 0 && ctx.overTasks.length > 0) {
+      const names = ctx.overTasks.map(t => t.subject).join('、')
+      dynamic[adjustIdx] = {
+        ...dynamic[adjustIdx],
+        placeholder: `提示：${names}用时超标，明天可以...`,
+      }
+    }
+
+    return dynamic
+  }
+
+  const questions = getDynamicQuestions()
 
   // Fetch existing review
   const fetchReview = useCallback(async () => {
@@ -161,6 +220,14 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
       }
     } catch (error) {
       console.error('获取总结数据失败:', error)
+    }
+
+    // Fetch review context for dynamic questions (daily only)
+    if (period === 'daily') {
+      fetch('/api/insights?type=review_context')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data) setReviewContext(data) })
+        .catch(() => {})
     }
   }, [period, dateStr])
 
@@ -490,6 +557,35 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
               </div>
             </CardContent>
           </Card>
+
+          {/* 数据洞察（仅日总结且有上下文数据时显示） */}
+          {period === 'daily' && reviewContext && !showSubmitted && (
+            <Card>
+              <CardContent className="pt-5 space-y-2">
+                <h3 className="font-semibold text-sm" style={{ color: 'var(--accent-color)' }}>
+                  💡 今天的数据告诉你
+                </h3>
+                {reviewContext.todayTasks.overTasks.length > 0 && (
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <span style={{ color: 'var(--danger)' }}>超时科目：</span>
+                    {reviewContext.todayTasks.overTasks.map(t => `${t.subject}（+${t.overMinutes}分钟）`).join('、')}
+                  </p>
+                )}
+                {reviewContext.todayTasks.fastTasks.length > 0 && (
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <span style={{ color: 'var(--success)' }}>高效科目：</span>
+                    {reviewContext.todayTasks.fastTasks.map(t => `${t.subject}（-${t.savedMinutes}分钟）`).join('、')}
+                  </p>
+                )}
+                {reviewContext.yesterdayReview && (
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    昨天偏差率 {reviewContext.yesterdayReview.deviation_rate}%，完成率 {reviewContext.yesterdayReview.completion_rate}%
+                    {reviewContext.yesterdayReview.deviation_rate > 30 && ' — 注意调整预估时长'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Guided questions */}
           {questions.map((q, idx) => (

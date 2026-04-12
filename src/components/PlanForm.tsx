@@ -85,6 +85,15 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
   // 任务验证错误
   const [taskErrors, setTaskErrors] = useState<Record<number, string>>({})
 
+  // 历史用时建议
+  const [subjectHistory, setSubjectHistory] = useState<Record<number, {
+    count: number
+    avg_actual: number
+    avg_deviation: number
+    suggested_min: number
+  }>>({})
+  const [fetchingHistory, setFetchingHistory] = useState<Record<number, boolean>>({})
+
   // 昨天规划是否存在
   const [hasYesterdayPlan, setHasYesterdayPlan] = useState(false)
   const [yesterdayPlan, setYesterdayPlan] = useState<DailyPlan | null>(null)
@@ -102,6 +111,35 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
       })
       .catch(() => {})
   }, [isEditing])
+
+  // 根据科目名称获取历史用时建议（debounce 500ms）
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    tasks.forEach((task, index) => {
+      if (!task.subject.trim()) return
+      if (subjectHistory[index]?.count > 0) return // Already fetched
+
+      timers.push(setTimeout(async () => {
+        setFetchingHistory(prev => ({ ...prev, [index]: true }))
+        try {
+          const res = await fetch(`/api/insights?type=subject_history&subject=${encodeURIComponent(task.subject.trim())}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data.count >= 2) {
+              setSubjectHistory(prev => ({
+                ...prev,
+                [index]: { count: data.count, avg_actual: data.avg_actual, avg_deviation: data.avg_deviation, suggested_min: data.suggested_min }
+              }))
+            }
+          }
+        } catch {}
+        setFetchingHistory(prev => ({ ...prev, [index]: false }))
+      }, 500))
+    })
+
+    return () => timers.forEach(clearTimeout)
+  }, [tasks.map(t => t.subject).join(',')])
 
   // 添加任务
   const addTask = () => {
@@ -132,6 +170,16 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
     const newErrors = { ...taskErrors }
     delete newErrors[index]
     setTaskErrors(newErrors)
+    // 清理历史建议数据并重新索引
+    const newHistory = { ...subjectHistory }
+    delete newHistory[index]
+    const reindexed: typeof subjectHistory = {}
+    Object.entries(newHistory).forEach(([key, val]) => {
+      const k = parseInt(key)
+      if (k > index) reindexed[k - 1] = val
+      else reindexed[k] = val
+    })
+    setSubjectHistory(reindexed)
   }
 
   // 更新任务字段
@@ -464,6 +512,33 @@ export default function PlanForm({ onSuccess, editPlan }: PlanFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* 历史用时建议 */}
+              {fetchingHistory[index] && (
+                <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <Loader2 className="size-3 animate-spin" />
+                  查询历史数据...
+                </div>
+              )}
+              {!fetchingHistory[index] && subjectHistory[index] && subjectHistory[index].count >= 2 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{
+                    color: subjectHistory[index].avg_deviation > 20 ? 'var(--danger)' : 'var(--success)'
+                  }}>
+                    历史平均 {subjectHistory[index].avg_actual} 分钟（{subjectHistory[index].count}次）
+                    {subjectHistory[index].avg_deviation > 20 && ` · 建议预估 ${subjectHistory[index].suggested_min} 分钟`}
+                  </span>
+                  {subjectHistory[index].avg_deviation > 20 && (
+                    <button
+                      onClick={() => updateTask(index, 'estimated_min', subjectHistory[index].suggested_min)}
+                      className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-color)' }}
+                    >
+                      采用
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* 错误提示 */}
               {taskErrors[index] && (

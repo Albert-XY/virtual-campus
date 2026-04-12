@@ -9,7 +9,7 @@ import CompletionChart from './CompletionChart'
 import AccuracyChart from './AccuracyChart'
 
 export default function TrendSection() {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [days, setDays] = useState(7)
 
   return (

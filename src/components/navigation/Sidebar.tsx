@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import {
   ChevronRight,
-  ClipboardList,
+  Target,
   FileText,
   Star,
   Bell,
@@ -30,12 +30,11 @@ interface SidebarProps {
 // 导航菜单定义
 const menuSections = [
   {
-    title: '规划管理',
-    icon: ClipboardList,
+    title: '学习目标',
+    icon: Target,
     items: [
+      { label: '目标管理', href: '/goals' },
       { label: '日规划', href: '/dashboard' },
-      { label: '周规划', href: '/dashboard?tab=weekly' },
-      { label: '月规划', href: '/dashboard?tab=monthly' },
     ],
   },
   {

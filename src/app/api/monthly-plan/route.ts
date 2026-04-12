@@ -122,7 +122,7 @@ export async function POST(request: Request) {
 
       if (error) {
         console.error('更新月规划失败:', error)
-        return NextResponse.json({ error: '更新月规划失败' }, { status: 500 })
+        return NextResponse.json({ error: `更新失败: ${error.message}` }, { status: 500 })
       }
 
       plan = data
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
 
       if (error) {
         console.error('创建月规划失败:', error)
-        return NextResponse.json({ error: '创建月规划失败' }, { status: 500 })
+        return NextResponse.json({ error: `创建失败: ${error.message}` }, { status: 500 })
       }
 
       plan = data

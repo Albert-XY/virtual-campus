@@ -3,9 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react'
 import {
   GUIDE_STEPS,
-  isGuideCompleted,
   markGuideCompleted,
-  getCurrentStepIndex,
   setCurrentStepIndex,
 } from '@/lib/guide'
 import GuideOverlay from '@/components/GuideOverlay'

@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { resetGuide } from '@/lib/guide'
-import { useGuide } from '@/components/GuideProvider'
+// TODO: 引导系统暂时停用，后续重新适配
+// import { useGuide } from '@/components/GuideProvider'
 import {
   Card,
   CardContent,
@@ -27,7 +28,8 @@ import {
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
-  const { startGuide } = useGuide()
+  // TODO: 引导系统暂时停用，后续重新适配
+  // const { startGuide } = useGuide()
 
   const handleThemeChange = (themeId: ThemeId) => {
     setTheme(themeId)
@@ -36,10 +38,11 @@ export default function SettingsPage() {
 
   const handleResetGuide = () => {
     resetGuide()
-    toast.success('引导已重置，即将开始')
-    setTimeout(() => {
-      startGuide()
-    }, 500)
+    toast.success('引导已重置，重新适配后可用')
+    // TODO: 引导系统暂时停用，后续重新适配
+    // setTimeout(() => {
+    //   startGuide()
+    // }, 500)
   }
 
   return (

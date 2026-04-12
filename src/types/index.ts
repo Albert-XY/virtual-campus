@@ -131,3 +131,28 @@ export interface SleepLog {
   wake_time: string
   points_earned: number
 }
+
+// ============================================================
+// 播报
+// ============================================================
+export type BroadcastContentType = 'text' | 'image' | 'video'
+
+export interface Broadcast {
+  id: string
+  title: string
+  content_type: BroadcastContentType
+  content: string
+  media_url: string | null
+  is_published: boolean
+  published_at: string | null
+  created_by: string | null
+  created_at: string
+  expires_at: string | null
+}
+
+export interface BroadcastView {
+  id: string
+  user_id: string
+  broadcast_id: string
+  viewed_at: string
+}

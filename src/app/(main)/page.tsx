@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import KanbanBoard from '@/components/kanban/KanbanBoard'
 
 export default function MainPage() {
-  redirect('/today')
+  return <KanbanBoard />
 }

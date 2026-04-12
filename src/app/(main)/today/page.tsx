@@ -17,6 +17,7 @@ import {
   Circle,
   Copy,
   ChevronRight,
+  FileEdit,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -58,6 +59,14 @@ interface CheckinRecord {
   check_in_at: string
   check_out_at: string | null
   duration_minutes: number | null
+}
+
+interface ReviewStatus {
+  has_review: boolean
+  review: {
+    review_text: string
+    mood: number
+  } | null
 }
 
 // Task type config - using CSS variable compatible approach
@@ -113,6 +122,7 @@ export default function TodayPage() {
   const [nickname, setNickname] = useState('')
   const [quickPlanning, setQuickPlanning] = useState(false)
   const [copying, setCopying] = useState(false)
+  const [reviewStatus, setReviewStatus] = useState<ReviewStatus | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -145,6 +155,24 @@ export default function TodayPage() {
       }
 
       await fetchData()
+
+      // Fetch review status
+      try {
+        const reviewRes = await fetch('/api/reviews?period=daily')
+        if (reviewRes.ok) {
+          const reviewJson = await reviewRes.json()
+          setReviewStatus({
+            has_review: reviewJson.has_review,
+            review: reviewJson.review ? {
+              review_text: reviewJson.review.review_text,
+              mood: reviewJson.review.mood,
+            } : null,
+          })
+        }
+      } catch {
+        // Silently fail - review status is not critical
+      }
+
       setLoading(false)
     }
 
@@ -421,9 +449,23 @@ export default function TodayPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span style={{ color: 'var(--text-secondary)' }}>今日任务进度</span>
-                <span className="font-semibold" style={{ color: 'var(--accent-color)' }}>
-                  {completedTasks}/{totalTasks}
-                </span>
+                <div className="flex items-center gap-2">
+                  {reviewStatus && (
+                    <span
+                      className="text-xs px-2 py-0.5"
+                      style={{
+                        borderRadius: '9999px',
+                        backgroundColor: reviewStatus.has_review ? 'var(--success-light)' : 'var(--accent-light)',
+                        color: reviewStatus.has_review ? 'var(--success)' : 'var(--accent-color)',
+                      }}
+                    >
+                      {reviewStatus.has_review ? '\u2705 已总结' : '\uD83D\uDCDD 待总结'}
+                    </span>
+                  )}
+                  <span className="font-semibold" style={{ color: 'var(--accent-color)' }}>
+                    {completedTasks}/{totalTasks}
+                  </span>
+                </div>
               </div>
               <Progress value={progressPercent}>
                 <div
@@ -557,6 +599,56 @@ export default function TodayPage() {
               进入校园开始学习
             </Button>
           </Link>
+
+          {/* Daily review card */}
+          {reviewStatus && (
+            <Card>
+              <CardContent className="pt-5">
+                {reviewStatus.has_review && reviewStatus.review ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="size-4" style={{ color: 'var(--success)' }} />
+                        <span className="text-sm font-semibold" style={{ color: 'var(--success)' }}>今日总结已完成</span>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                      {reviewStatus.review.review_text}
+                    </p>
+                    <Link
+                      href="/review/daily"
+                      className="flex items-center gap-0.5 text-xs"
+                      style={{ color: 'var(--accent-color)' }}
+                    >
+                      查看详情
+                      <ChevronRight className="size-3" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileEdit className="size-4" style={{ color: 'var(--accent-color)' }} />
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        还没写今日总结
+                      </span>
+                    </div>
+                    <Link
+                      href="/review/daily"
+                      className="flex items-center gap-1 text-sm font-medium px-3 py-1.5 transition-colors"
+                      style={{
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--accent-color)',
+                        color: '#fff',
+                      }}
+                    >
+                      去总结
+                      <ChevronRight className="size-3" />
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Today points */}
           {data.today_points > 0 && (

@@ -5,8 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { isGuideCompleted } from '@/lib/guide'
-import { useGuide } from '@/components/GuideProvider'
 import {
   Loader2,
   Zap,
@@ -119,7 +117,6 @@ function getElapsedMinutes(isoStr: string): number {
 // ============================================================
 export default function TodayPage() {
   const router = useRouter()
-  const { startGuide, isActive } = useGuide()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<TodayData | null>(null)
   const [nickname, setNickname] = useState('')
@@ -177,13 +174,6 @@ export default function TodayPage() {
       }
 
       setLoading(false)
-
-      // 首次登录自动触发引导
-      if (!isGuideCompleted() && !isActive) {
-        setTimeout(() => {
-          startGuide()
-        }, 800)
-      }
     }
 
     init()

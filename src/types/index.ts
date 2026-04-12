@@ -156,3 +156,27 @@ export interface BroadcastView {
   broadcast_id: string
   viewed_at: string
 }
+
+// ============================================================
+// 学习目标
+// ============================================================
+export type GoalPeriod = 'yearly' | 'monthly' | 'weekly'
+export type GoalStatus = 'active' | 'completed' | 'abandoned'
+
+export interface LearningGoal {
+  id: string
+  user_id: string
+  period: GoalPeriod
+  title: string
+  description: string
+  total_units: number
+  completed_units: number
+  start_date: string
+  target_date: string | null
+  parent_goal_id: string | null
+  status: GoalStatus
+  created_at: string
+  updated_at: string
+  // 可选的子目标
+  children?: LearningGoal[]
+}

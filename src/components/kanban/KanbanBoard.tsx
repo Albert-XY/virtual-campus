@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Star } from 'lucide-react'
+import { Loader2, Star, Target } from 'lucide-react'
 import TaskList from './TaskList'
 import PlanVsActual from './PlanVsActual'
 import TodoSection from './TodoSection'
@@ -13,6 +13,7 @@ import NextStepIndicator from './NextStepIndicator'
 import ContextNudge from './ContextNudge'
 import MilestoneBar from './MilestoneBar'
 import TrendSection from '@/components/charts/TrendSection'
+import GoalProgressCard from '@/components/goals/GoalProgressCard'
 import ScenePanel from '@/components/scene/ScenePanel'
 import LibraryPanel from '@/components/scene/LibraryPanel'
 import StudyRoomPanel from '@/components/scene/StudyRoomPanel'
@@ -78,6 +79,53 @@ function getGreeting(): { text: string; emoji: string } {
   if (hour < 14) return { text: '中午好，记得休息一下', emoji: '🌤️' }
   if (hour < 18) return { text: '下午好，继续加油', emoji: '☀️' }
   return { text: '今天辛苦了', emoji: '🌙' }
+}
+
+// ============================================================
+// Goal Progress Section (inline component)
+// ============================================================
+function GoalProgressSection() {
+  const [goals, setGoals] = useState<Array<{
+    id: string
+    period: 'monthly' | 'weekly'
+    title: string
+    total_units: number
+    completed_units: number
+    target_date: string | null
+    start_date: string
+    status: string
+    pace: number | null
+    on_track: boolean | null
+  }>>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/goals/progress')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.goals) setGoals(data.goals)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading || goals.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      {goals.map((goal) => (
+        <GoalProgressCard
+          key={goal.id}
+          goal={goal}
+          pace={goal.pace ?? undefined}
+          onTrack={goal.on_track ?? undefined}
+          onClick={() => {
+            window.location.href = '/goals'
+          }}
+        />
+      ))}
+    </div>
+  )
 }
 
 // ============================================================
@@ -373,6 +421,9 @@ export default function KanbanBoard() {
         onQuickPlan={handleQuickPlan}
         onOpenScene={() => handleOpenScene('library')}
       />
+
+      {/* Goal progress cards */}
+      <GoalProgressSection />
 
       {/* Layer 2: Context-aware nudge */}
       <ContextNudge

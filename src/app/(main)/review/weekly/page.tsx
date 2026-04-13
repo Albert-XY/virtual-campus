@@ -1,9 +1,9 @@
-import StructuredReview from '@/components/review/StructuredReview'
+import WeeklyReview from '@/components/review/WeeklyReview'
 
 export default function WeeklyReviewPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-5">
-      <StructuredReview period="weekly" periodLabel="周总结" />
+      <WeeklyReview />
     </div>
   )
 }

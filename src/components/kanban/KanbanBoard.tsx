@@ -14,9 +14,6 @@ import ContextNudge from './ContextNudge'
 import MilestoneBar from './MilestoneBar'
 import TrendSection from '@/components/charts/TrendSection'
 import GoalProgressCard from '@/components/goals/GoalProgressCard'
-import ScenePanel from '@/components/scene/ScenePanel'
-import LibraryPanel from '@/components/scene/LibraryPanel'
-import StudyRoomPanel from '@/components/scene/StudyRoomPanel'
 
 // ============================================================
 // Types
@@ -141,11 +138,6 @@ export default function KanbanBoard() {
   // Quick plan state
   const [quickPlanning, setQuickPlanning] = useState(false)
   const [copying, setCopying] = useState(false)
-
-  // Scene panel state
-  const [scenePanelOpen, setScenePanelOpen] = useState(false)
-  const [activePanelScene, setActivePanelScene] = useState<'library' | 'study-room'>('library')
-  const [panelCheckinId, setPanelCheckinId] = useState<string | null>(null)
 
   // Fetch kanban data
   const fetchData = useCallback(async () => {
@@ -284,53 +276,6 @@ export default function KanbanBoard() {
     }
   }
 
-  // Open scene panel
-  const handleOpenScene = async (scene: 'library' | 'study-room') => {
-    // If already in this scene, open the panel directly
-    if (data?.active_scene?.scene === scene) {
-      setActivePanelScene(scene)
-      setPanelCheckinId(data.active_scene.checkin_id)
-      setScenePanelOpen(true)
-      return
-    }
-
-    // If in another scene, leave first
-    if (data?.active_scene) {
-      try {
-        await fetch('/api/scene', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ checkin_id: data.active_scene.checkin_id }),
-        })
-      } catch {
-        // Continue anyway
-      }
-    }
-
-    // Check in to the new scene
-    try {
-      const res = await fetch('/api/scene', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scene }),
-      })
-
-      if (!res.ok) {
-        const json = await res.json()
-        toast.error(json.error || '进入场景失败')
-        return
-      }
-
-      const { checkin } = await res.json()
-      setActivePanelScene(scene)
-      setPanelCheckinId(checkin?.id ?? null)
-      setScenePanelOpen(true)
-      await fetchData()
-    } catch {
-      toast.error('网络错误，请重试')
-    }
-  }
-
   // Leave scene handler
   const handleLeaveScene = async () => {
     if (!data?.active_scene) return
@@ -352,25 +297,6 @@ export default function KanbanBoard() {
     }
 
     await fetchData()
-  }
-
-  // Handle panel close (leave scene)
-  const handlePanelClose = async () => {
-    setScenePanelOpen(false)
-
-    if (panelCheckinId) {
-      try {
-        await fetch('/api/scene', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ checkin_id: panelCheckinId }),
-        })
-      } catch {
-        // Silent
-      }
-      setPanelCheckinId(null)
-      await fetchData()
-    }
   }
 
   // Loading state
@@ -441,7 +367,7 @@ export default function KanbanBoard() {
         hasMonthlyGoal={data.has_monthly_goal}
         hasWeeklyGoal={data.has_weekly_goal}
         onQuickPlan={handleQuickPlan}
-        onOpenScene={() => handleOpenScene('library')}
+        onOpenScene={() => {}}
       />
 
       {/* Goal progress cards */}
@@ -476,7 +402,7 @@ export default function KanbanBoard() {
           <TaskList
             tasks={data.tasks as TaskItem[]}
             onRefresh={fetchData}
-            onOpenScene={handleOpenScene}
+            onOpenScene={() => {}}
           />
 
           {/* Plan vs Actual (only show when there are completed tasks or actual minutes) */}
@@ -513,31 +439,8 @@ export default function KanbanBoard() {
       {/* Scene shortcuts */}
       <SceneShortcuts
         activeScene={data.active_scene}
-        onOpenScene={handleOpenScene}
         onLeaveScene={handleLeaveScene}
       />
-
-      {/* Scene panel (Sheet from bottom) */}
-      <ScenePanel
-        open={scenePanelOpen}
-        onOpenChange={(open) => {
-          if (!open) handlePanelClose()
-        }}
-        scene={activePanelScene}
-        title={activePanelScene === 'library' ? '图书馆' : '自习室'}
-      >
-        {activePanelScene === 'library' ? (
-          <LibraryPanel
-            checkinId={panelCheckinId}
-            onLeave={handlePanelClose}
-          />
-        ) : (
-          <StudyRoomPanel
-            checkinId={panelCheckinId}
-            onLeave={handlePanelClose}
-          />
-        )}
-      </ScenePanel>
     </div>
   )
 }

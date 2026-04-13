@@ -12,16 +12,17 @@ interface SceneShortcutsProps {
     scene_name: string
     checkin_id: string
   } | null
-  onOpenScene: (scene: 'library' | 'study-room') => void
   onLeaveScene: () => void
 }
 
 // ============================================================
 // Component
+//
+// 场景快捷入口 - 跳转到沉浸式独立页面
+// 图书馆和自习室不再是 Sheet 面板，而是独立的全屏场景
 // ============================================================
 export default function SceneShortcuts({
   activeScene,
-  onOpenScene,
   onLeaveScene,
 }: SceneShortcutsProps) {
   return (
@@ -60,11 +61,11 @@ export default function SceneShortcuts({
         </div>
       )}
 
-      {/* 场景快捷按钮 */}
+      {/* 场景快捷按钮 - 跳转到独立页面 */}
       <div className="grid grid-cols-3 gap-2">
         {/* 图书馆 */}
-        <button
-          onClick={() => onOpenScene('library')}
+        <Link
+          href="/campus/library"
           className="flex flex-col items-center gap-1.5 p-3 transition-all active:scale-[0.97]"
           style={{
             borderRadius: 'var(--radius-sm)',
@@ -82,11 +83,11 @@ export default function SceneShortcuts({
           >
             图书馆
           </span>
-        </button>
+        </Link>
 
         {/* 自习室 */}
-        <button
-          onClick={() => onOpenScene('study-room')}
+        <Link
+          href="/campus/study-room"
           className="flex flex-col items-center gap-1.5 p-3 transition-all active:scale-[0.97]"
           style={{
             borderRadius: 'var(--radius-sm)',
@@ -104,7 +105,7 @@ export default function SceneShortcuts({
           >
             自习室
           </span>
-        </button>
+        </Link>
 
         {/* 宿舍 */}
         <Link

@@ -18,7 +18,6 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import GoalForm from '@/components/goals/GoalForm'
-import GoalGuard from '@/components/goals/GoalGuard'
 
 // ============================================================
 // Types
@@ -68,41 +67,59 @@ function isOnTrack(goal: GoalItem): boolean | null {
   return goal.completed_units >= expectedCompleted
 }
 
-function getStatusBadge(status: string) {
+function getStatusConfig(status: string) {
   switch (status) {
     case 'completed':
-      return { label: '已完成', color: 'var(--success)', bg: 'var(--success-light, rgba(34,197,94,0.1))' }
+      return { label: '已完成', variant: 'success' as const }
     case 'abandoned':
-      return { label: '已放弃', color: 'var(--text-muted)', bg: 'var(--bg-secondary)' }
+      return { label: '已放弃', variant: 'default' as const }
     default:
-      return { label: '进行中', color: 'var(--accent-color)', bg: 'var(--accent-light)' }
+      return { label: '进行中', variant: 'primary' as const }
   }
 }
 
 // ============================================================
-// Progress bar component
+// Progress bar component - 主题感知
 // ============================================================
 function ProgressBar({ completed, total, status, track }: {
   completed: number; total: number; status: string; track: boolean | null
 }) {
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+  const variant = status === 'completed' ? 'success' : track === false ? 'danger' : 'default'
+
   return (
-    <div className="space-y-1">
+    <div className="themed-progress-wrapper space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span style={{ color: 'var(--text-secondary)' }}>{completed}/{total}</span>
-        <span style={{ color: 'var(--text-muted)' }}>{pct}%</span>
+        <span className="text-secondary">{completed}/{total}</span>
+        <span className="text-muted">{pct}%</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden" style={{ borderRadius: '9999px', backgroundColor: 'var(--bg-secondary)' }}>
+      <div className="themed-progress">
         <div
-          className="h-full transition-all duration-300"
-          style={{
-            width: `${Math.min(pct, 100)}%`,
-            borderRadius: '9999px',
-            backgroundColor: status === 'completed' ? 'var(--success)' : track === false ? 'var(--danger)' : 'var(--accent-color)',
-          }}
+          className={`themed-progress__fill themed-progress--${variant}`}
+          style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
     </div>
+  )
+}
+
+// ============================================================
+// Badge component - 主题感知
+// ============================================================
+function StatusBadge({ status }: { status: string }) {
+  const config = getStatusConfig(status)
+  return (
+    <span className={`themed-badge themed-badge--${config.variant}`}>
+      {config.label}
+    </span>
+  )
+}
+
+function PeriodBadge({ period }: { period: 'monthly' | 'weekly' }) {
+  return (
+    <span className="themed-badge">
+      {period === 'monthly' ? '月目标' : '周'}
+    </span>
   )
 }
 
@@ -180,25 +197,25 @@ export default function GoalsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent-color)' }} />
+        <Loader2 className="size-8 animate-spin text-accent" />
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
+    <div className="goals-page mx-auto max-w-lg px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="goals-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} style={{ color: 'var(--text-secondary)' }}>
+          <button onClick={() => router.push('/')} className="text-secondary hover:text-primary transition-colors">
             <ArrowLeft className="size-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Target className="size-5" style={{ color: 'var(--accent-color)' }} />
-            <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>学习目标</h1>
+            <Target className="size-5 text-accent" />
+            <h1 className="page-title text-lg">学习目标</h1>
           </div>
         </div>
-        <Button size="sm" onClick={handleCreateMonthly} style={{ backgroundColor: 'var(--accent-color)' }}>
+        <Button size="sm" onClick={handleCreateMonthly} className="themed-button--primary">
           <Plus className="size-4" />
           月目标
         </Button>
@@ -206,15 +223,15 @@ export default function GoalsPage() {
 
       {/* Empty state */}
       {monthlyGoals.length === 0 && !formState.open && (
-        <div className="flex flex-col items-center gap-4 py-12">
-          <div className="flex size-16 items-center justify-center" style={{ borderRadius: '50%', backgroundColor: 'var(--accent-light)' }}>
-            <Target className="size-8" style={{ color: 'var(--accent-color)' }} />
+        <div className="empty-state flex flex-col items-center gap-4 py-12">
+          <div className="empty-state-icon flex size-16 items-center justify-center">
+            <Target className="size-8 text-accent" />
           </div>
-          <div className="text-center space-y-1">
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>还没有设置目标</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>从设定这个月的学习目标开始</p>
+          <div className="empty-state-text text-center space-y-1">
+            <p className="text-sm text-secondary">还没有设置目标</p>
+            <p className="text-xs text-muted">从设定这个月的学习目标开始</p>
           </div>
-          <Button onClick={handleCreateMonthly} style={{ backgroundColor: 'var(--accent-color)' }}>
+          <Button onClick={handleCreateMonthly} className="themed-button--primary">
             <Plus className="size-4" />
             创建月目标
           </Button>
@@ -225,40 +242,34 @@ export default function GoalsPage() {
       {monthlyGoals.map((monthly) => {
         const isExpanded = expandedId === monthly.id
         const weekChildren = monthly.children ?? []
-        const mPace = calcPace(monthly)
         const mTrack = isOnTrack(monthly)
-        const mStatus = getStatusBadge(monthly.status)
 
         return (
-          <Card key={monthly.id}>
+          <Card key={monthly.id} className="themed-card">
             <CardContent className="pt-4">
               {/* Monthly goal header */}
               <button type="button" onClick={() => setExpandedId(isExpanded ? null : monthly.id)} className="w-full text-left">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] px-1.5 py-0.5 font-medium" style={{ borderRadius: '4px', backgroundColor: 'var(--accent-light)', color: 'var(--accent-color)' }}>
-                        月目标
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5" style={{ borderRadius: '4px', backgroundColor: mStatus.bg, color: mStatus.color }}>
-                        {mStatus.label}
-                      </span>
+                      <PeriodBadge period="monthly" />
+                      <StatusBadge status={monthly.status} />
                     </div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{monthly.title}</p>
+                    <p className="goal-title text-sm font-medium">{monthly.title}</p>
                     <ProgressBar completed={monthly.completed_units} total={monthly.total_units} status={monthly.status} track={mTrack} />
-                    <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div className="goal-meta flex items-center gap-3 text-xs text-muted">
                       {monthly.target_date && (
                         <span className="flex items-center gap-1"><Calendar className="size-3" />截止 {formatTargetDate(monthly.target_date)}</span>
                       )}
-                      {mTrack === false && <span style={{ color: 'var(--danger)' }}>进度落后</span>}
-                      {mTrack === true && <span style={{ color: 'var(--success)' }}>进度正常</span>}
-                      {mPace != null && mPace > 0 && <span>每天需 {mPace} 单位</span>}
+                      {mTrack === false && <span className="text-danger">进度落后</span>}
+                      {mTrack === true && <span className="text-success">进度正常</span>}
+                      {calcPace(monthly) != null && calcPace(monthly)! > 0 && <span>每天需 {calcPace(monthly)} 单位</span>}
                       {weekChildren.length > 0 && (
                         <span className="flex items-center gap-1"><ListTree className="size-3" />{weekChildren.length} 个周目标</span>
                       )}
                     </div>
                   </div>
-                  <div className="shrink-0 mt-1" style={{ color: 'var(--text-muted)' }}>
+                  <div className="shrink-0 mt-1 text-muted">
                     {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                   </div>
                 </div>
@@ -266,45 +277,40 @@ export default function GoalsPage() {
 
               {/* Expanded: weekly children + actions */}
               {isExpanded && (
-                <div className="mt-3 pt-3 space-y-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                <div className="goal-expanded mt-3 pt-3 space-y-3 border-t border-border">
                   {monthly.description && (
-                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{monthly.description}</p>
+                    <p className="goal-description text-xs text-secondary">{monthly.description}</p>
                   )}
 
                   {/* Weekly children */}
                   {weekChildren.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="weekly-goals space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                        <p className="text-xs font-medium text-secondary">
                           <ListTree className="size-3 inline mr-1" />周目标拆解
                         </p>
                       </div>
                       {weekChildren.map((week) => {
                         const wTrack = isOnTrack(week)
-                        const wStatus = getStatusBadge(week.status)
                         return (
-                          <div key={week.id} className="flex items-start gap-2 px-3 py-2" style={{ borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)' }}>
+                          <div key={week.id} className="weekly-goal-item flex items-start gap-2 px-3 py-2 rounded-lg bg-secondary/50">
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] px-1.5 py-0.5" style={{ borderRadius: '4px', backgroundColor: 'rgba(99,102,241,0.06)', color: 'var(--text-secondary)' }}>
-                                  周
-                                </span>
-                                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{week.title}</span>
-                                <span className="text-[10px] px-1 py-0.5" style={{ borderRadius: '4px', backgroundColor: wStatus.bg, color: wStatus.color }}>
-                                  {wStatus.label}
-                                </span>
+                                <PeriodBadge period="weekly" />
+                                <span className="text-sm">{week.title}</span>
+                                <StatusBadge status={week.status} />
                               </div>
                               <ProgressBar completed={week.completed_units} total={week.total_units} status={week.status} track={wTrack} />
-                              <div className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                              <div className="flex items-center gap-2 text-[10px] text-muted">
                                 {week.target_date && <span>截止 {formatTargetDate(week.target_date)}</span>}
-                                {wTrack === false && <span style={{ color: 'var(--danger)' }}>落后</span>}
+                                {wTrack === false && <span className="text-danger">落后</span>}
                               </div>
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button onClick={() => handleEdit(week)} className="p-1 rounded hover:bg-black/5" style={{ color: 'var(--text-muted)' }}>
+                            <div className="goal-actions flex items-center gap-1 shrink-0">
+                              <button onClick={() => handleEdit(week)} className="p-1 rounded hover:bg-black/5 text-muted hover:text-primary transition-colors">
                                 <Edit className="size-3" />
                               </button>
-                              <button onClick={() => handleDelete(week)} className="p-1 rounded hover:bg-black/5" style={{ color: 'var(--danger)' }}>
+                              <button onClick={() => handleDelete(week)} className="p-1 rounded hover:bg-black/5 text-danger transition-colors">
                                 <Trash2 className="size-3" />
                               </button>
                             </div>
@@ -315,14 +321,14 @@ export default function GoalsPage() {
                   )}
 
                   {/* Action buttons */}
-                  <div className="flex items-center gap-2">
+                  <div className="goal-actions flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(monthly)}>
                       <Edit className="size-3.5" /> 编辑月目标
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleCreateWeekly(monthly)}>
                       <Plus className="size-3.5" /> 添加周目标
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(monthly)} style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}>
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(monthly)} className="text-danger border-danger hover:bg-danger/10">
                       <Trash2 className="size-3.5" />
                     </Button>
                   </div>
@@ -335,12 +341,12 @@ export default function GoalsPage() {
 
       {/* Form overlay */}
       {formState.open && (
-        <div className="space-y-3">
+        <div className="goal-form space-y-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => setFormState((s) => ({ ...s, open: false }))} className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <button onClick={() => setFormState((s) => ({ ...s, open: false }))} className="text-sm text-muted hover:text-primary transition-colors">
               ← 返回
             </button>
-            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            <span className="text-sm font-medium text-secondary">
               {formState.editGoal ? '编辑目标' : `创建${formState.period === 'monthly' ? '月' : '周'}目标`}
             </span>
           </div>

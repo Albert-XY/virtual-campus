@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../styles/themed-components.css";
+@import "../styles/immersive-scene.css";
 
 @custom-variant dark (&:is(.dark *));
 

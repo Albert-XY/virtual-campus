@@ -60,7 +60,7 @@ function getGuardConfig(props: Omit<GoalGuardProps, 'children' | 'strict'>): Gua
         return {
           missing: true,
           message: '今天还没有规划，先花1分钟规划一下',
-          href: '/today',
+          href: '/',
           linkText: '去规划',
         }
       }

@@ -85,38 +85,28 @@ export default function Sidebar({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="w-72 p-0"
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          borderLeft: '1px solid var(--border-color)',
-        }}
+        className="sidebar-content w-72 p-0"
       >
         {/* 用户信息区域 */}
-        <SheetHeader className="border-b px-4 py-4" style={{ borderColor: 'var(--border-color)' }}>
-          <SheetTitle
-            className="text-base font-bold"
-            style={{ color: 'var(--text-primary)' }}
-          >
+        <SheetHeader className="sidebar-header border-b px-4 py-4">
+          <SheetTitle className="sidebar-title text-base font-bold">
             {userNickname}
           </SheetTitle>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <p className="sidebar-subtitle text-xs">
             虚拟校园
           </p>
         </SheetHeader>
 
         {/* 导航列表 */}
-        <nav className="flex-1 overflow-y-auto px-2 py-2">
+        <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-2">
           {menuSections.map((section) => {
             const SectionIcon = section.icon
 
             if ('items' in section && section.items) {
               // 分组导航
               return (
-                <div key={section.title} className="mb-1">
-                  <div
-                    className="flex items-center gap-2 px-2 py-2 text-xs font-medium"
-                    style={{ color: 'var(--text-muted)' }}
-                  >
+                <div key={section.title} className="sidebar-section mb-1">
+                  <div className="sidebar-section-title flex items-center gap-2 px-2 py-2 text-xs font-medium">
                     <SectionIcon className="size-3.5" />
                     {section.title}
                   </div>
@@ -125,21 +115,12 @@ export default function Sidebar({
                       key={item.href}
                       href={item.href}
                       onClick={() => onOpenChange(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors"
-                      style={{
-                        color: isActive(item.href)
-                          ? 'var(--accent-color)'
-                          : 'var(--text-primary)',
-                        backgroundColor: isActive(item.href)
-                          ? 'var(--accent-light, rgba(0,0,0,0.05))'
-                          : 'transparent',
-                      }}
+                      className={`sidebar-item flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                        isActive(item.href) ? 'sidebar-item--active' : ''
+                      }`}
                     >
                       <span>{item.label}</span>
-                      <ChevronRight
-                        className="size-4"
-                        style={{ color: 'var(--text-muted)' }}
-                      />
+                      <ChevronRight className="size-4 text-muted" />
                     </Link>
                   ))}
                 </div>
@@ -153,43 +134,30 @@ export default function Sidebar({
                 key={section.title}
                 href={href}
                 onClick={() => onOpenChange(false)}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors"
-                style={{
-                  color: isActive(href)
-                    ? 'var(--accent-color)'
-                    : 'var(--text-primary)',
-                  backgroundColor: isActive(href)
-                    ? 'var(--accent-light, rgba(0,0,0,0.05))'
-                    : 'transparent',
-                }}
+                className={`sidebar-item flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                  isActive(href) ? 'sidebar-item--active' : ''
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <SectionIcon className="size-4" />
                   <span>{section.title}</span>
                   {section.title === '播报存档' && unreadBroadcasts > 0 && (
-                    <span
-                      className="flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                      style={{ backgroundColor: 'var(--danger, #EF4444)' }}
-                    >
+                    <span className="sidebar-badge flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white">
                       {unreadBroadcasts > 9 ? '9+' : unreadBroadcasts}
                     </span>
                   )}
                 </div>
-                <ChevronRight
-                  className="size-4"
-                  style={{ color: 'var(--text-muted)' }}
-                />
+                <ChevronRight className="size-4 text-muted" />
               </Link>
             )
           })}
         </nav>
 
         {/* 底部退出登录 */}
-        <div className="border-t px-2 py-3" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="sidebar-footer border-t px-2 py-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors"
-            style={{ color: 'var(--danger, #EF4444)' }}
+            className="sidebar-logout flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors"
           >
             <div className="flex items-center gap-3">
               <LogOut className="size-4" />

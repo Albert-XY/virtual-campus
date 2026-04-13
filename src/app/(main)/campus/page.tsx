@@ -7,7 +7,11 @@ import { Button } from '@/components/ui/button'
 import type { SceneType } from '@/types'
 
 // ============================================================
-// Scene config
+// 场景配置
+//
+// 核心规则：
+// - 宿舍始终可用（规划、复盘、休息都在宿舍）
+// - 图书馆和自习室需要先完成今日规划才能进入
 // ============================================================
 interface SceneConfig {
   id: SceneType
@@ -16,85 +20,50 @@ interface SceneConfig {
   description: string
   href: string
   available: boolean
-  cssVarPrefix: string // e.g. 'library', 'study', 'dorm'
+  cssVarPrefix: string
+  /** 是否需要规划才能进入 */
+  requiresPlan: boolean
 }
 
-const availableScenes: SceneConfig[] = [
+const scenes: SceneConfig[] = [
+  {
+    id: 'dormitory',
+    name: '宿舍',
+    emoji: '\u{1F319}',
+    description: '规划、复盘、休息 — 一天从这里开始，也在这里结束',
+    href: '/campus/dormitory',
+    available: true,
+    cssVarPrefix: 'dorm',
+    requiresPlan: false,
+  },
   {
     id: 'library',
     name: '图书馆',
     emoji: '\u{1F4DA}',
-    description: '观看学习视频，掌握知识点',
+    description: '专注学习 — 观看学习视频，掌握知识点',
     href: '/campus/library',
     available: true,
     cssVarPrefix: 'library',
+    requiresPlan: true,
   },
   {
     id: 'study-room',
     name: '自习室',
     emoji: '\u270F\uFE0F',
-    description: '完成练习任务，检验学习成果',
+    description: '练习巩固 — 完成练习任务，检验学习成果',
     href: '/campus/study-room',
     available: true,
     cssVarPrefix: 'study',
-  },
-  {
-    id: 'dormitory',
-    name: '宿舍',
-    emoji: '\u{1F319}',
-    description: '记录睡眠时间，养成早睡习惯',
-    href: '/campus/dormitory',
-    available: true,
-    cssVarPrefix: 'dorm',
+    requiresPlan: true,
   },
 ]
 
-const upcomingScenes: SceneConfig[] = [
-  {
-    id: 'exam-center',
-    name: '考试中心',
-    emoji: '\u{1F3EB}',
-    description: '综合测评',
-    href: '/campus/exam-center',
-    available: false,
-    cssVarPrefix: '',
-  },
-  {
-    id: 'sports',
-    name: '运动场',
-    emoji: '\u26BD',
-    description: '运动健身',
-    href: '/campus/sports',
-    available: false,
-    cssVarPrefix: '',
-  },
-  {
-    id: 'canteen',
-    name: '食堂',
-    emoji: '\u{1F35C}',
-    description: '休息餐饮',
-    href: '/campus/canteen',
-    available: false,
-    cssVarPrefix: '',
-  },
-  {
-    id: 'bulletin',
-    name: '公告栏',
-    emoji: '\u{1F4CB}',
-    description: '校园公告',
-    href: '/campus/bulletin',
-    available: false,
-    cssVarPrefix: '',
-  },
-  {
-    id: 'shop',
-    name: '校园商店',
-    emoji: '\u{1F3EA}',
-    description: '积分兑换',
-    href: '/campus/shop',
-    available: false,
-    cssVarPrefix: '',
-  },
+const upcomingScenes = [
+  { id: 'exam-center', name: '考试中心', emoji: '\u{1F3EB}' },
+  { id: 'sports', name: '运动场', emoji: '\u26BD' },
+  { id: 'canteen', name: '食堂', emoji: '\u{1F35C}' },
+  { id: 'bulletin', name: '公告栏', emoji: '\u{1F4CB}' },
+  { id: 'shop', name: '校园商店', emoji: '\u{1F3EA}' },
 ]
 
 // ============================================================
@@ -102,17 +71,11 @@ const upcomingScenes: SceneConfig[] = [
 // ============================================================
 function getTimeGreeting(): { emoji: string; greeting: string } {
   const hour = new Date().getHours()
-  if (hour >= 6 && hour < 12) {
-    return { emoji: '\u2600\uFE0F', greeting: '早上好，新的一天开始了' }
-  } else if (hour >= 12 && hour < 14) {
-    return { emoji: '\u{1F324}\uFE0F', greeting: '中午好，记得午休哦' }
-  } else if (hour >= 14 && hour < 18) {
-    return { emoji: '\u{1F324}\uFE0F', greeting: '下午好，继续加油' }
-  } else if (hour >= 18 && hour < 22) {
-    return { emoji: '\u{1F305}', greeting: '晚上好，今天辛苦了' }
-  } else {
-    return { emoji: '\u{1F319}', greeting: '夜深了，注意休息' }
-  }
+  if (hour >= 6 && hour < 12) return { emoji: '\u2600\uFE0F', greeting: '早上好，新的一天开始了' }
+  if (hour >= 12 && hour < 14) return { emoji: '\u{1F324}\uFE0F', greeting: '中午好，记得午休哦' }
+  if (hour >= 14 && hour < 18) return { emoji: '\u{1F324}\uFE0F', greeting: '下午好，继续加油' }
+  if (hour >= 18 && hour < 22) return { emoji: '\u{1F305}', greeting: '晚上好，今天辛苦了' }
+  return { emoji: '\u{1F319}', greeting: '夜深了，注意休息' }
 }
 
 function formatMinutes(minutes: number): string {
@@ -124,12 +87,8 @@ function formatMinutes(minutes: number): string {
 
 function getDormitoryHint(): string {
   const hour = new Date().getHours()
-  if (hour >= 22 || hour < 6) {
-    return '该休息了'
-  }
-  if (hour >= 21) {
-    return '快到打卡时间了'
-  }
+  if (hour >= 22 || hour < 6) return '该休息了'
+  if (hour >= 21) return '快到打卡时间了'
   return '打卡时间未到'
 }
 
@@ -190,18 +149,10 @@ export default function CampusPage() {
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
         const data = await tasksRes.value.json()
         const tasks = data.tasks ?? []
-        const pending = tasks.filter(
-          (t: { status: string }) => t.status !== 'completed'
-        )
-        const libraryCount = pending.filter(
-          (t: { task_type: string }) => t.task_type === 'knowledge'
-        ).length
-        const studyRoomCount = pending.filter(
-          (t: { task_type: string }) => t.task_type === 'practice'
-        ).length
+        const pending = tasks.filter((t: { status: string }) => t.status !== 'completed')
         setPendingTasks({
-          library: libraryCount,
-          'study-room': studyRoomCount,
+          library: pending.filter((t: { task_type: string }) => t.task_type === 'knowledge').length,
+          'study-room': pending.filter((t: { task_type: string }) => t.task_type === 'practice').length,
         })
       }
     } catch (error) {
@@ -211,11 +162,8 @@ export default function CampusPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchAllData()
-  }, [fetchAllData])
+  useEffect(() => { fetchAllData() }, [fetchAllData])
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -229,22 +177,16 @@ export default function CampusPage() {
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 
   return (
-    <div
-      className="min-h-screen transition-colors duration-300"
-      style={{ backgroundColor: 'var(--bg-primary)' }}
-    >
+    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="mx-auto max-w-lg px-4 py-6">
-        {/* ====== Top greeting area ====== */}
+        {/* 顶部问候 */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent-color)' }}>
               <span className="text-lg">{timeEmoji}</span>
               <span>{timeStr}</span>
             </div>
-            <h1
-              className="mt-1 text-xl font-bold"
-              style={{ color: 'var(--text-primary)' }}
-            >
+            <h1 className="mt-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {greeting}
             </h1>
           </div>
@@ -260,25 +202,24 @@ export default function CampusPage() {
           </div>
         </div>
 
-        {/* ====== No plan overlay ====== */}
+        {/* 未规划提示 — 只锁定学习场景，宿舍始终可用 */}
         {!hasPlan && (
           <div className="relative mb-6">
             <div
-              className="p-5 text-center transition-colors duration-300"
+              className="p-4 text-center transition-colors duration-300"
               style={{
                 borderRadius: 'var(--radius-lg)',
                 backgroundColor: 'var(--accent-light)',
                 border: '1px solid var(--border-color)',
               }}
             >
-              <div className="mb-3 text-4xl">{'\u{1F512}'}</div>
-              <p className="text-base font-semibold" style={{ color: 'var(--accent-color)' }}>
-                请先完成今日规划
+              <p className="text-sm font-semibold" style={{ color: 'var(--accent-color)' }}>
+                还没做今日规划
               </p>
-              <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                完成规划后即可进入校园各个场景
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                完成规划后才能进入图书馆和自习室
               </p>
-              <Link href="/dashboard" className="mt-4 inline-block">
+              <Link href="/" className="mt-3 inline-block">
                 <Button
                   className="text-white shadow-md"
                   style={{
@@ -286,29 +227,29 @@ export default function CampusPage() {
                     borderRadius: '9999px',
                     paddingLeft: '1.5rem',
                     paddingRight: '1.5rem',
+                    fontSize: '0.8rem',
                   }}
                 >
-                  去规划
+                  回看板规划
                 </Button>
               </Link>
             </div>
           </div>
         )}
 
-        {/* ====== Available scenes ====== */}
+        {/* 场景列表 */}
         <div className="mb-6 space-y-3">
           <h2 className="text-sm font-medium pl-1" style={{ color: 'var(--text-muted)' }}>
             {'\u{1F3D7}\uFE0F'} 校园场景
           </h2>
-          {availableScenes.map((scene) => {
+          {scenes.map((scene) => {
             const isActive = activeScene === scene.id
             const taskCount = pendingTasks[scene.id] ?? 0
-            const isLocked = !hasPlan
+            const isLocked = scene.requiresPlan && !hasPlan
 
             return (
               <div key={scene.id} className="relative">
                 {isLocked ? (
-                  /* Locked state */
                   <div
                     id={
                       scene.id === 'library' ? 'guide-campus-library' :
@@ -347,7 +288,6 @@ export default function CampusPage() {
                     </div>
                   </div>
                 ) : (
-                  /* Available state */
                   <Link href={scene.href} className="block">
                     <div
                       id={
@@ -365,7 +305,6 @@ export default function CampusPage() {
                         boxShadow: isActive ? 'var(--shadow-lg)' : 'var(--shadow)',
                       }}
                     >
-                      {/* Active scene pulse indicator */}
                       {isActive && (
                         <div className="absolute right-3 top-3 flex items-center gap-1.5">
                           <span className="relative flex size-2.5">
@@ -379,7 +318,7 @@ export default function CampusPage() {
                             />
                           </span>
                           <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                            正在学习中...
+                            正在使用...
                           </span>
                         </div>
                       )}
@@ -405,7 +344,6 @@ export default function CampusPage() {
                           <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
                             {scene.description}
                           </p>
-                          {/* Bottom hint */}
                           <div className="mt-2 flex items-center gap-1">
                             {scene.id === 'dormitory' ? (
                               <span
@@ -453,7 +391,7 @@ export default function CampusPage() {
           })}
         </div>
 
-        {/* ====== Upcoming scenes ====== */}
+        {/* 即将开放 */}
         <div className="mb-6">
           <h2 className="mb-3 text-sm font-medium pl-1" style={{ color: 'var(--text-muted)' }}>
             即将开放
@@ -476,7 +414,7 @@ export default function CampusPage() {
           </div>
         </div>
 
-        {/* ====== Bottom info bar ====== */}
+        {/* 今日数据 */}
         <div
           className="p-4 transition-colors duration-300"
           style={{

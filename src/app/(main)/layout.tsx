@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Sidebar from '@/components/navigation/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow'
+import ThemeDecorations from '@/components/theme/ThemeDecorations'
+import { getStoredTheme } from '@/lib/themes'
 import { Star, Bell, Menu } from 'lucide-react'
 
 export default function MainLayout({
@@ -16,6 +19,19 @@ export default function MainLayout({
   const [nickname, setNickname] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [unreadBroadcasts, setUnreadBroadcasts] = useState(0)
+  const [currentTheme, setCurrentTheme] = useState<string>('journal')
+
+  // 获取当前主题
+  useEffect(() => {
+    const theme = getStoredTheme()
+    setCurrentTheme(theme)
+
+    const handleThemeChange = () => {
+      setCurrentTheme(getStoredTheme())
+    }
+    window.addEventListener('themechange', handleThemeChange)
+    return () => window.removeEventListener('themechange', handleThemeChange)
+  }, [])
 
   // 获取用户积分和昵称
   useEffect(() => {
@@ -34,7 +50,6 @@ export default function MainLayout({
           setPoints(profile.total_points)
           setNickname(profile.nickname || '同学')
         }
-        // 获取未读播报数量（容错：表不存在时跳过）
         try {
           const { count } = await supabase
             .from('broadcasts')
@@ -52,66 +67,55 @@ export default function MainLayout({
 
   return (
     <ProtectedRoute>
-      <header
-        className="sticky top-0 z-40 border-b"
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          borderColor: 'var(--border-color)',
-        }}
-      >
+      {/* 主题装饰层 */}
+      <ThemeDecorations theme={currentTheme} />
+
+      {/* 顶部栏 */}
+      <header className="app-header sticky top-0 z-40 border-b">
         <div className="mx-auto flex h-12 max-w-lg items-center justify-between px-4">
-          <h1
-            className="text-lg font-bold"
-            style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--text-primary)',
-            }}
-          >
+          <h1 className="page-title text-lg font-bold">
             虚拟校园
           </h1>
           <div className="flex items-center gap-3">
-            <button
-              className="flex items-center gap-1 text-sm"
-              style={{ color: 'var(--points-color, var(--accent-color))' }}
-            >
+            <button className="points-display flex items-center gap-1 text-sm">
               <Star className="size-4" />
               <span>{points ?? '--'}</span>
             </button>
             <button
-              className="relative"
+              className="notification-btn relative"
               onClick={() => {
                 /* TODO: 打开播报弹窗 */
               }}
             >
-              <Bell
-                className="size-5"
-                style={{ color: 'var(--text-secondary)' }}
-              />
+              <Bell className="size-5 text-muted" />
               {unreadBroadcasts > 0 && (
-                <span
-                  className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                  style={{ backgroundColor: 'var(--danger, #EF4444)' }}
-                >
+                <span className="notification-badge absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold text-white">
                   {unreadBroadcasts > 9 ? '9+' : unreadBroadcasts}
                 </span>
               )}
             </button>
-            <button onClick={() => setSidebarOpen(true)}>
-              <Menu
-                className="size-5"
-                style={{ color: 'var(--text-secondary)' }}
-              />
+            <button onClick={() => setSidebarOpen(true)} className="menu-btn">
+              <Menu className="size-5 text-muted" />
             </button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-lg">{children}</main>
+
+      {/* 主内容区 - 底部留出导航栏空间 */}
+      <main className="mx-auto max-w-lg pb-14">{children}</main>
+
+      {/* 底部导航栏 */}
+      <BottomNav />
+
+      {/* 侧边栏 */}
       <Sidebar
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}
         userNickname={nickname}
         unreadBroadcasts={unreadBroadcasts}
       />
+
+      {/* 新用户引导 */}
       <OnboardingFlow />
     </ProtectedRoute>
   )

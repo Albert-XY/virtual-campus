@@ -41,6 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (fontLink) {
       fontLink.href = themes[theme].fonts.googleUrl
     }
+
+    // Dispatch theme change event for components like ThemeDecorations
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }))
+    }
   }, [theme, mounted])
 
   const setTheme = useCallback((t: ThemeId) => {

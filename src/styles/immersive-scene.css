@@ -1,0 +1,595 @@
+/* ============================================================
+   IMMERSIVE SCENE - 沉浸式场景样式
+   进入场景后隐藏顶部栏、侧边栏，提供全屏沉浸体验
+   所有颜色使用 CSS 变量，自动适配主题
+   ============================================================ */
+
+/* 隐藏主布局元素 */
+body.immersive-mode .app-header,
+body.immersive-mode .sidebar-content {
+  display: none !important;
+}
+
+body.immersive-mode main {
+  max-width: 100% !important;
+}
+
+/* ============================================================
+   SCENE BASE - 场景基础样式
+   ============================================================ */
+.immersive-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: opacity 0.5s ease;
+}
+
+/* ============================================================
+   ENTER/LEAVE TRANSITIONS - 进入/离开过渡
+   ============================================================ */
+.immersive-scene--entering {
+  opacity: 0;
+}
+
+.immersive-scene--leaving {
+  opacity: 0;
+}
+
+.immersive-scene__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  animation: immersiveFadeIn 0.3s ease-out;
+}
+
+.immersive-scene__overlay--leaving {
+  animation: immersiveFadeOut 0.5s ease-in forwards;
+}
+
+.immersive-scene__overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+@keyframes immersiveFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes immersiveFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ============================================================
+   HEADER - 场景顶部栏（极简）
+   ============================================================ */
+.immersive-scene__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: transparent;
+}
+
+.immersive-scene__back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.immersive-scene__back:hover {
+  background: var(--bg-secondary);
+}
+
+.immersive-scene__name {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================
+   CONTENT - 场景主内容
+   ============================================================ */
+.immersive-scene__content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 1rem 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.immersive-scene__content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.immersive-scene__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.immersive-scene__content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   FOOTER - 底部操作区
+   ============================================================ */
+.immersive-scene__footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg-primary) 60%, transparent);
+}
+
+.immersive-scene__leave-btn {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.immersive-scene__leave-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-color);
+}
+
+.immersive-scene__leave-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   LIBRARY SCENE - 图书馆场景
+   使用 CSS 变量适配所有主题，不硬编码颜色
+   ============================================================ */
+
+/* 图书馆特有的氛围层 - 使用主题色微调 */
+.library-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+/* 微妙的光线效果 - 使用主题accent色 */
+.library-atmosphere::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--accent-color) 3%, transparent) 0%,
+    transparent 70%
+  );
+  animation: libraryLightShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes libraryLightShift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-5%, 3%) scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* 图书馆内容区域 */
+.library-content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+/* 图书馆 - 当前任务高亮 */
+.library-current-task {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--accent-color) 15%, var(--border-color));
+  margin-bottom: 1.5rem;
+}
+
+.library-current-task__label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.7rem;
+  color: var(--accent-color);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.library-current-task__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 图书馆 - 任务列表 */
+.library-task-list {
+  margin-bottom: 1.5rem;
+}
+
+.library-task-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.library-task-list__title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.library-task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--bg-card);
+  margin-bottom: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+  color: inherit;
+}
+
+.library-task-item:hover {
+  border-color: var(--border-color);
+}
+
+.library-task-item--selected {
+  background: color-mix(in srgb, var(--accent-color) 6%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--accent-color) 20%, var(--border-color));
+}
+
+.library-task-item--completed {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.library-task-item__icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.library-task-item--completed .library-task-item__icon {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+}
+
+.library-task-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.library-task-item__subject {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.library-task-item__topic {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+.library-task-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.library-task-item__action {
+  flex-shrink: 0;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.library-task-item__action--start {
+  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+  color: var(--accent-color);
+}
+
+.library-task-item__action--start:hover {
+  background: color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+.library-task-item__action--complete {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.library-task-item__action--complete:hover {
+  background: color-mix(in srgb, var(--success) 25%, transparent);
+}
+
+/* 图书馆 - 番茄钟区域 */
+.library-pomodoro {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.library-pomodoro__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.library-pomodoro__title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 图书馆 - 数据概览 */
+.library-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.library-stat {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.library-stat__value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.library-stat__label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 图书馆 - 今日预估 */
+.library-estimate {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.library-estimate__title {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.library-estimate__bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-primary);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.library-estimate__fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent-color);
+  transition: width 0.5s ease;
+}
+
+.library-estimate__text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   AMBIENT PLAYER IN SCENE
+   ============================================================ */
+.immersive-scene .ambient-player {
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   TASK COMPLETE DIALOG IN SCENE
+   ============================================================ */
+.library-complete-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+.library-complete-dialog__content {
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.library-complete-dialog__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.library-complete-dialog__subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.library-complete-dialog__field {
+  margin-bottom: 1rem;
+}
+
+.library-complete-dialog__label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+}
+
+.library-complete-dialog__input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.library-complete-dialog__input:focus {
+  border-color: var(--accent-color);
+}
+
+.library-complete-dialog__range {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  background: var(--bg-primary);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.library-complete-dialog__range::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+}
+
+.library-complete-dialog__textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.library-complete-dialog__textarea:focus {
+  border-color: var(--accent-color);
+}
+
+.library-complete-dialog__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.library-complete-dialog__btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.library-complete-dialog__btn--cancel {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.library-complete-dialog__btn--cancel:hover {
+  background: var(--border-color);
+}
+
+.library-complete-dialog__btn--confirm {
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-color);
+}
+
+.library-complete-dialog__btn--confirm:hover {
+  background: color-mix(in srgb, var(--accent-color) 30%, transparent);
+}

@@ -1,107 +1,70 @@
 export interface GuideStep {
   id: string
-  targetId: string // 要高亮的DOM元素id
+  targetId: string
   title: string
   description: string
-  placement: 'top' | 'bottom' | 'left' | 'right' // 气泡位置
-  action?: string // 可选的操作提示，如"点击试试"
+  placement: 'top' | 'bottom' | 'left' | 'right'
+  action?: string
 }
 
-// 引导流程定义
+// ============================================================
+// 新版引导流程 — 适配3Tab导航架构
+//
+// 流程：看板(规划) → 校园(场景) → 完成
+// ============================================================
 export const GUIDE_STEPS: GuideStep[] = [
-  // 第一步：今日页面
+  // 第一步：看板首页
   {
     id: 'welcome',
-    targetId: 'guide-today-greeting', // 今日页问候区域
+    targetId: 'guide-today-greeting',
     title: '欢迎来到虚拟校园！',
-    description: '这是你的"今日"主页，每天打开App都会先到这里。系统会根据你的状态显示不同的内容。',
+    description: '这是你的看板，每天打开App都会先到这里。系统会根据你的状态显示不同的内容。',
     placement: 'bottom',
   },
   {
     id: 'today-status',
-    targetId: 'guide-today-status', // 今日状态区域
+    targetId: 'guide-today-status',
     title: '今日概览',
     description: '这里显示你今天的规划状态、任务进度和积分情况。完成规划后这里会显示更多信息。',
     placement: 'bottom',
   },
-  // 第二步：引导去规划
-  {
-    id: 'nav-plan',
-    targetId: 'guide-nav-plan', // 底部导航"规划"tab
-    title: '先规划，再行动',
-    description: '这是核心规则——每天必须先完成规划，才能进入校园学习。点击"规划"开始你的第一次规划吧！',
-    placement: 'top',
-    action: '点击进入规划中心',
-  },
-  // 第三步：规划中心（用户点击后跳转到/dashboard）
-  {
-    id: 'plan-form',
-    targetId: 'guide-plan-form', // 规划表单区域
-    title: '填写今日规划',
-    description: '添加你今天要学习的任务，设置预计时长。也可以点击"快速规划"一键创建默认模板。',
-    placement: 'top',
-  },
-  {
-    id: 'plan-submit',
-    targetId: 'guide-plan-submit', // 提交按钮
-    title: '开始今天的学习！',
-    description: '规划完成后点击这个按钮，校园就会解锁。试试看吧！',
-    placement: 'top',
-    action: '点击提交规划',
-  },
-  // 第四步：校园地图
+  // 第二步：引导去校园（宿舍做规划）
   {
     id: 'nav-campus',
-    targetId: 'guide-nav-campus', // 底部导航"校园"tab
+    targetId: 'guide-nav-campus',
     title: '虚拟校园',
-    description: '规划完成后，这里会解锁。你可以选择进入不同的场景学习。',
+    description: '点击"校园"进入校园场景。宿舍始终可以进入——在那里做规划、写总结、休息。',
     placement: 'top',
     action: '点击进入校园',
   },
-  // 第五步：场景介绍
+  // 第三步：场景介绍
+  {
+    id: 'campus-dorm',
+    targetId: 'guide-campus-dorm',
+    title: '宿舍',
+    description: '一天从这里开始。在宿舍做今日规划，晚上回来写总结和打卡。宿舍始终可用。',
+    placement: 'right',
+  },
   {
     id: 'campus-library',
-    targetId: 'guide-campus-library', // 图书馆卡片
+    targetId: 'guide-campus-library',
     title: '图书馆',
-    description: '在这里进行知识学习。你可以选择要做的任务，启动番茄钟专注学习。',
+    description: '完成规划后解锁。在这里进行知识学习，选择任务、启动番茄钟专注学习。',
     placement: 'right',
   },
   {
     id: 'campus-study',
-    targetId: 'guide-campus-study', // 自习室卡片
+    targetId: 'guide-campus-study',
     title: '自习室',
-    description: '在这里完成练习任务。完成任务后记录实际用时和准确率。',
+    description: '完成规划后解锁。在这里完成练习任务，记录用时和准确率。',
     placement: 'right',
-  },
-  {
-    id: 'campus-dorm',
-    targetId: 'guide-campus-dorm', // 宿舍卡片
-    title: '宿舍',
-    description: '别忘了早睡打卡！22:30前打卡可以获得更多积分。',
-    placement: 'right',
-  },
-  // 第六步：积分
-  {
-    id: 'nav-points',
-    targetId: 'guide-nav-points', // 底部导航"积分"tab
-    title: '积分体系',
-    description: '完成任务、早睡打卡、写总结都能获得积分。积分是你的学习行为记录。',
-    placement: 'top',
-  },
-  // 第七步：复盘
-  {
-    id: 'review-reminder',
-    targetId: 'guide-review-area', // 今日页总结区域
-    title: '每日复盘',
-    description: '每天结束学习后，记得写今日总结。回顾今天的表现，规划明天的安排。坚持复盘是进步的关键！',
-    placement: 'bottom',
   },
   // 最后一步
   {
     id: 'complete',
-    targetId: 'guide-nav-profile', // 底部导航"我的"tab
+    targetId: 'guide-nav-profile',
     title: '引导完成！',
-    description: '你已经了解了虚拟校园的核心功能。记住：规划→执行→复盘，每天循环。在"我的"页面可以修改昵称、切换主题。开始你的自主学习之旅吧！',
+    description: '你已经了解了虚拟校园的核心流程：宿舍规划 → 图书馆/自习室学习 → 宿舍总结。在"我的"页面可以修改昵称、切换主题。开始你的自主学习之旅吧！',
     placement: 'top',
   },
 ]

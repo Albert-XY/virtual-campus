@@ -556,6 +556,245 @@
 }
 
 /* ============================================================
+   Star Citizen Theme: Holographic Deep-Space Interface
+   ============================================================ */
+[data-theme="star-citizen"] {
+  --background: #0A1628;
+  --foreground: #FFFFFF;
+  --card: rgba(0, 30, 60, 0.6);
+  --card-foreground: #FFFFFF;
+  --popover: #0D1F3C;
+  --popover-foreground: #FFFFFF;
+  --primary: #0099DD;
+  --primary-foreground: #FFFFFF;
+  --secondary: rgba(0, 60, 120, 0.5);
+  --secondary-foreground: #AACCEE;
+  --muted: rgba(0, 40, 80, 0.4);
+  --muted-foreground: #6699BB;
+  --accent: #0099DD;
+  --accent-foreground: #FFFFFF;
+  --destructive: #FF3344;
+  --border: rgba(0, 153, 221, 0.3);
+  --input: rgba(0, 153, 221, 0.2);
+  --ring: #0099DD;
+  --radius: 0.25rem;
+  --chart-1: #0099DD;
+  --chart-2: #00CC66;
+  --chart-3: #FF8800;
+  --chart-4: #AA00FF;
+  --chart-5: #00DDEE;
+  --sidebar: rgba(0, 15, 30, 0.9);
+  --sidebar-foreground: #AACCEE;
+  --sidebar-primary: #0099DD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(0, 153, 221, 0.15);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(0, 153, 221, 0.2);
+  --sidebar-ring: #0099DD;
+
+  --bg-primary: #0A1628;
+  --bg-secondary: #0D1F3C;
+  --bg-card: rgba(0, 30, 60, 0.6);
+  --bg-card-hover: rgba(0, 40, 80, 0.8);
+  --text-primary: #FFFFFF;
+  --text-secondary: #AACCEE;
+  --text-muted: #6699BB;
+  --accent-color: #0099DD;
+  --accent-hover: #33BBFF;
+  --accent-light: rgba(0, 153, 221, 0.15);
+  --success: #00CC66;
+  --success-light: rgba(0, 204, 102, 0.15);
+  --danger: #FF3344;
+  --warning: #FF8800;
+  --border-color: rgba(0, 153, 221, 0.3);
+  --border-light: rgba(0, 153, 221, 0.15);
+  --shadow: 0 0 15px rgba(0, 153, 221, 0.15);
+  --shadow-lg: 0 0 25px rgba(0, 153, 221, 0.25), 0 0 50px rgba(0, 153, 221, 0.1);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Share Tech Mono', monospace;
+
+  --scene-library: #0099DD;
+  --scene-library-bg: rgba(0, 153, 221, 0.08);
+  --scene-study: #00CC66;
+  --scene-study-bg: rgba(0, 204, 102, 0.08);
+  --scene-dorm: #AA00FF;
+  --scene-dorm-bg: rgba(170, 0, 255, 0.08);
+  --scene-dorm-gradient-from: #1A0033;
+  --scene-dorm-gradient-to: #0A1628;
+
+  --nav-bg: rgba(0, 15, 30, 0.95);
+  --nav-active: #0099DD;
+  --nav-inactive: #6699BB;
+  --points-color: #00DDEE;
+  --points-bg: rgba(0, 221, 238, 0.15);
+  --points-text: #FFFFFF;
+  --hero-gradient-from: #001133;
+  --hero-gradient-via: #003366;
+  --hero-gradient-to: #0A1628;
+  --hero-text: #FFFFFF;
+  --hero-subtext: #AACCEE;
+  --scene-active-from: #0099DD;
+  --scene-active-via: #0066AA;
+  --scene-active-to: #003366;
+}
+
+/* Star Citizen: holographic scan line overlay */
+[data-theme="star-citizen"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 153, 221, 0.03) 2px,
+    rgba(0, 153, 221, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Star Citizen: grid background */
+[data-theme="star-citizen"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 153, 221, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 153, 221, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Star Citizen: holographic glow utilities */
+[data-theme="star-citizen"] .holo-glow {
+  text-shadow: 0 0 8px rgba(0, 153, 221, 0.6), 0 0 16px rgba(0, 153, 221, 0.3);
+}
+
+[data-theme="star-citizen"] .holo-border {
+  box-shadow: 0 0 8px rgba(0, 153, 221, 0.3), inset 0 0 8px rgba(0, 153, 221, 0.05);
+  border-color: rgba(0, 153, 221, 0.5);
+}
+
+[data-theme="star-citizen"] .holo-panel {
+  background: rgba(0, 30, 60, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 153, 221, 0.3);
+  box-shadow: 0 0 15px rgba(0, 153, 221, 0.1), inset 0 1px 0 rgba(0, 153, 221, 0.1);
+}
+
+/* ============================================================
+   Mirror's Edge Theme: Stark Minimalism with Red Runner Vision
+   ============================================================ */
+[data-theme="mirrors-edge"] {
+  --background: #F5F5F5;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #E8302A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8E8E8;
+  --secondary-foreground: #1A1A1A;
+  --muted: #E8E8E8;
+  --muted-foreground: #999999;
+  --accent: #E8302A;
+  --accent-foreground: #FFFFFF;
+  --destructive: #CC0000;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #E8302A;
+  --radius: 0;
+  --chart-1: #E8302A;
+  --chart-2: #F5A623;
+  --chart-3: #4A90D9;
+  --chart-4: #1A1A1A;
+  --chart-5: #999999;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #E8302A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(232, 48, 42, 0.08);
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #E8302A;
+
+  --bg-primary: #F5F5F5;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8F8F8;
+  --text-primary: #1A1A1A;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+  --accent-color: #E8302A;
+  --accent-hover: #FF5550;
+  --accent-light: rgba(232, 48, 42, 0.08);
+  --success: #2E7D32;
+  --success-light: rgba(46, 125, 50, 0.08);
+  --danger: #CC0000;
+  --warning: #F5A623;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(0, 0, 0, 0.05);
+  --shadow: 4px 4px 0px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 6px 6px 0px rgba(0, 0, 0, 0.12);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 2px;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --scene-library: #E8302A;
+  --scene-library-bg: rgba(232, 48, 42, 0.06);
+  --scene-study: #F5A623;
+  --scene-study-bg: rgba(245, 166, 35, 0.06);
+  --scene-dorm: #4A90D9;
+  --scene-dorm-bg: rgba(74, 144, 217, 0.06);
+  --scene-dorm-gradient-from: #4A90D9;
+  --scene-dorm-gradient-to: #87CEEB;
+
+  --nav-bg: #FFFFFF;
+  --nav-active: #E8302A;
+  --nav-inactive: #999999;
+  --points-color: #E8302A;
+  --points-bg: rgba(232, 48, 42, 0.08);
+  --points-text: #1A1A1A;
+  --hero-gradient-from: #F5F5F5;
+  --hero-gradient-via: #FFFFFF;
+  --hero-gradient-to: #E8E8E8;
+  --hero-text: #1A1A1A;
+  --hero-subtext: #555555;
+  --scene-active-from: #E8302A;
+  --scene-active-via: #FF5550;
+  --scene-active-to: #FF8880;
+}
+
+/* Mirror's Edge: no texture overlays — stark purity */
+
+/* Mirror's Edge: hard shadow utility */
+[data-theme="mirrors-edge"] .hard-shadow {
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Mirror's Edge: runner vision highlight */
+[data-theme="mirrors-edge"] .runner-vision {
+  border: 2px solid #E8302A;
+  box-shadow: 4px 4px 0px rgba(232, 48, 42, 0.2);
+}
+
+/* Mirror's Edge: bold typography override */
+[data-theme="mirrors-edge"] h1,
+[data-theme="mirrors-edge"] h2,
+[data-theme="mirrors-edge"] h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================
    Scene fade-in animation
    ============================================================ */
 @keyframes sceneFadeIn {

@@ -71,7 +71,7 @@ const themeInitScript = `
 (function() {
   try {
     var stored = localStorage.getItem('virtual-campus-theme');
-    if (stored && ['journal', 'pixel', 'zen', 'magazine'].indexOf(stored) !== -1) {
+    if (stored && ['journal', 'pixel', 'zen', 'magazine', 'star-citizen', 'mirrors-edge'].indexOf(stored) !== -1) {
       document.documentElement.setAttribute('data-theme', stored);
     } else {
       document.documentElement.setAttribute('data-theme', 'journal');

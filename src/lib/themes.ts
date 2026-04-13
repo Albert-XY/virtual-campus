@@ -1,4 +1,4 @@
-export type ThemeId = 'journal' | 'pixel' | 'zen' | 'magazine'
+export type ThemeId = 'journal' | 'pixel' | 'zen' | 'magazine' | 'star-citizen' | 'mirrors-edge'
 
 export interface ThemeConfig {
   id: ThemeId
@@ -157,9 +157,71 @@ export const themes: Record<ThemeId, ThemeConfig> = {
       dormitory: '#AA00FF',
     },
   },
+  'star-citizen': {
+    id: 'star-citizen',
+    name: '星际公民风',
+    description: '深空全息投影，蓝色辉光与半透明面板，沉浸式科幻座舱',
+    preview: '🚀',
+    fonts: {
+      display: "'Rajdhani', sans-serif",
+      body: "'Share Tech Mono', monospace",
+      googleUrl: 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap',
+    },
+    colors: {
+      bg: '#0A1628',
+      bgSecondary: '#0D1F3C',
+      fg: '#FFFFFF',
+      fgSecondary: '#AACCEE',
+      muted: '#6699BB',
+      accent: '#0099DD',
+      accentHover: '#33BBFF',
+      card: 'rgba(0, 30, 60, 0.6)',
+      cardHover: 'rgba(0, 40, 80, 0.8)',
+      border: 'rgba(0, 153, 221, 0.3)',
+      success: '#00CC66',
+      warning: '#FF8800',
+      danger: '#FF3344',
+    },
+    sceneColors: {
+      library: '#0099DD',
+      studyRoom: '#00CC66',
+      dormitory: '#AA00FF',
+    },
+  },
+  'mirrors-edge': {
+    id: 'mirrors-edge',
+    name: '镜之边缘风',
+    description: '极简纯净与高对比红色指引，跑者视角的极致克制美学',
+    preview: '🏃',
+    fonts: {
+      display: "'Outfit', sans-serif",
+      body: "'Inter', sans-serif",
+      googleUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap',
+    },
+    colors: {
+      bg: '#F5F5F5',
+      bgSecondary: '#FFFFFF',
+      fg: '#1A1A1A',
+      fgSecondary: '#555555',
+      muted: '#999999',
+      accent: '#E8302A',
+      accentHover: '#FF5550',
+      card: '#FFFFFF',
+      cardHover: '#F8F8F8',
+      border: 'rgba(0, 0, 0, 0.1)',
+      success: '#2E7D32',
+      warning: '#F5A623',
+      danger: '#CC0000',
+    },
+    sceneColors: {
+      library: '#E8302A',
+      studyRoom: '#F5A623',
+      dormitory: '#4A90D9',
+    },
+  },
 }
 
-export const themeIds: ThemeId[] = ['journal', 'pixel', 'zen', 'magazine']
+export const themeIds: ThemeId[] = ['journal', 'pixel', 'zen', 'magazine', 'star-citizen', 'mirrors-edge']
 
 export const DEFAULT_THEME: ThemeId = 'journal'
 

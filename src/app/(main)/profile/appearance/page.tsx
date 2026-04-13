@@ -13,6 +13,8 @@ const themeDescriptions: Record<ThemeId, string> = {
   pixel: '8-bit复古游戏世界，像素网格与霓虹色彩',
   zen: '留白与克制，和纸质感，无印良品般的宁静',
   magazine: '大胆撞色与霓虹发光，Z世代潮流视觉',
+  'star-citizen': '深空全息投影，蓝色辉光与半透明面板，沉浸式科幻座舱',
+  'mirrors-edge': '极简纯净与高对比红色指引，跑者视角的极致克制美学',
 }
 
 const themeColorBars: Record<ThemeId, { colors: string[]; label: string }> = {
@@ -31,6 +33,14 @@ const themeColorBars: Record<ThemeId, { colors: string[]; label: string }> = {
   magazine: {
     colors: ['#0D0D0D', '#FF3D00', '#00E5FF', '#AA00FF', '#00E676'],
     label: '纯黑 / 亮橙红 / 青 / 霓虹紫 / 霓虹绿',
+  },
+  'star-citizen': {
+    colors: ['#0A1628', '#0099DD', '#00CC66', '#FF8800', '#AA00FF'],
+    label: '深空 / 全息蓝 / 就绪绿 / 警告橙 / 扫描紫',
+  },
+  'mirrors-edge': {
+    colors: ['#F5F5F5', '#E8302A', '#F5A623', '#4A90D9', '#1A1A1A'],
+    label: '纯白 / 跑者红 / 辅助橙 / 天空蓝 / 墨黑',
   },
 }
 

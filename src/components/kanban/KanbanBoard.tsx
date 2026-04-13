@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Loader2, Star, Target } from 'lucide-react'
 import TaskList from './TaskList'
 import PlanVsActual from './PlanVsActual'
 import TodoSection from './TodoSection'
-import SceneShortcuts from './SceneShortcuts'
 import QuickPlan from './QuickPlan'
 import NextStepIndicator from './NextStepIndicator'
 import ContextNudge from './ContextNudge'
@@ -436,11 +436,20 @@ export default function KanbanBoard() {
         streakDays={data.todo_items.streak_days}
       />
 
-      {/* Scene shortcuts */}
-      <SceneShortcuts
-        activeScene={data.active_scene}
-        onLeaveScene={handleLeaveScene}
-      />
+      {/* 去校园按钮 — 校园页是唯一的场景入口 */}
+      {!data.has_plan && (
+        <Link
+          href="/campus"
+          className="mt-2 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all active:scale-[0.97]"
+          style={{
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          进入校园
+        </Link>
+      )}
     </div>
   )
 }

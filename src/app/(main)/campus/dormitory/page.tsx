@@ -1,16 +1,33 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Moon, Star, Clock, TrendingUp, Loader2, LogOut } from 'lucide-react'
+import {
+  Moon, Star, Clock, TrendingUp, Loader2,
+  ClipboardList, PenLine, Coffee, Sun,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import PlanForm from '@/components/PlanForm'
+import StructuredReview from '@/components/review/StructuredReview'
 import type { SleepLog } from '@/types'
 import { calculateSleepPoints } from '@/lib/points'
 
+// ============================================================
+// 宿舍页面 — 一天的起点和终点
+//
+// 设计理念：
+// - 宿舍始终可用，不需要先规划
+// - 早晨：起床打卡 → 查看昨日总结 → 制定今日规划 → 出发去图书馆
+// - 白天：可以回来休息
+// - 夜晚：完成日总结 → 睡眠打卡
+//
+// 用Tab区分不同功能区，而不是堆砌在一个页面上
+// ============================================================
+
 type SleepStatus = 'idle' | 'sleeping' | 'completed'
+type DormTab = 'plan' | 'review' | 'rest' | 'sleep'
 
 interface TodayState {
   status: SleepStatus
@@ -26,16 +43,18 @@ function formatTimeNow(): string {
 function getTimeMessage(time: string): { text: string; level: 'gold' | 'warning' | 'late' } {
   const [h, m] = time.split(':').map(Number)
   const minutes = h * 60 + m
-  if (minutes <= 22 * 60 + 30) return { text: '现在是早睡黄金时间！', level: 'gold' }
-  if (minutes <= 23 * 60) return { text: '还可以赶上早睡打卡', level: 'warning' }
-  return { text: '今天已经过了早睡打卡时间', level: 'late' }
+  if (minutes <= 22 * 60 + 30) return { text: '早睡黄金时间', level: 'gold' }
+  if (minutes <= 23 * 60) return { text: '还可以赶上打卡', level: 'warning' }
+  return { text: '已过打卡时间', level: 'late' }
 }
 
-function getDormitorySubtitle(): string {
+function getGreeting(): { text: string; icon: React.ReactNode } {
   const hour = new Date().getHours()
-  if (hour < 22) return '还不困？再学一会儿吧'
-  if (hour < 23) return '该准备休息了'
-  return '夜深了，早点休息吧'
+  if (hour >= 6 && hour < 12) return { text: '早上好，新的一天开始了', icon: <Sun className="size-5" /> }
+  if (hour >= 12 && hour < 14) return { text: '中午好，记得午休', icon: <Coffee className="size-5" /> }
+  if (hour >= 14 && hour < 18) return { text: '下午好，继续加油', icon: <Sun className="size-5" /> }
+  if (hour >= 18 && hour < 22) return { text: '晚上好，今天辛苦了', icon: <Moon className="size-5" /> }
+  return { text: '夜深了，早点休息吧', icon: <Moon className="size-5" /> }
 }
 
 function formatDate(dateStr: string): string {
@@ -59,14 +78,28 @@ export default function DormitoryPage() {
   const [history, setHistory] = useState<SleepLog[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+
+  // 宿舍功能区Tab
+  const [activeTab, setActiveTab] = useState<DormTab>('plan')
+
+  // 规划状态
+  const [hasPlan, setHasPlan] = useState(false)
+  const [planJustCreated, setPlanJustCreated] = useState(false)
+
+  // 总结状态
+  const [hasReview, setHasReview] = useState(false)
+
+  // 进入提示
   const [showEntryToast, setShowEntryToast] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
-      const [todayRes, historyRes, streakRes] = await Promise.all([
+      const [todayRes, historyRes, streakRes, planRes, reviewRes] = await Promise.all([
         fetch('/api/sleep/today'),
         fetch('/api/sleep/today?action=history'),
         fetch('/api/sleep/today?action=streak'),
+        fetch('/api/plan/check'),
+        fetch('/api/reviews?period=daily'),
       ])
 
       const todayData = await todayRes.json()
@@ -75,21 +108,22 @@ export default function DormitoryPage() {
 
       let status: SleepStatus = 'idle'
       let log: SleepLog | null = todayData.log
-
       if (log) {
-        if (log.wake_time && log.wake_time !== '') {
-          status = 'completed'
-        } else {
-          status = 'sleeping'
-        }
+        status = log.wake_time && log.wake_time !== '' ? 'completed' : 'sleeping'
       }
 
-      setTodayState({
-        status,
-        log,
-        streak: streakData.streak ?? 0,
-      })
+      setTodayState({ status, log, streak: streakData.streak ?? 0 })
       setHistory(historyData.logs ?? [])
+
+      if (planRes.ok) {
+        const planData = await planRes.json()
+        setHasPlan(planData.has_plan)
+      }
+
+      if (reviewRes.ok) {
+        const reviewData = await reviewRes.json()
+        setHasReview(reviewData.has_review)
+      }
     } catch {
       toast.error('加载数据失败')
     } finally {
@@ -98,24 +132,32 @@ export default function DormitoryPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(formatTimeNow())
-    }, 1000)
+    const timer = setInterval(() => setCurrentTime(formatTimeNow()), 1000)
     return () => clearInterval(timer)
   }, [])
 
-  // 进入提示自动消失
   useEffect(() => {
     if (showEntryToast) {
       const timer = setTimeout(() => setShowEntryToast(false), 1500)
       return () => clearTimeout(timer)
     }
   }, [showEntryToast])
+
+  // 根据时间段自动选择默认Tab
+  useEffect(() => {
+    if (loading) return
+    const hour = new Date().getHours()
+    if (hour >= 6 && hour < 12 && !hasPlan) {
+      setActiveTab('plan')
+    } else if (hour >= 20 && !hasReview) {
+      setActiveTab('review')
+    } else if (hour >= 22 || hour < 6) {
+      setActiveTab('sleep')
+    }
+  }, [loading, hasPlan, hasReview])
 
   const handleSleepCheckin = async () => {
     setSubmitting(true)
@@ -125,21 +167,12 @@ export default function DormitoryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sleep_time: sleepTime }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        toast.error(data.error || '打卡失败')
-        return
-      }
-
+      if (!res.ok) { toast.error(data.error || '打卡失败'); return }
       toast.success('晚安！祝你做个好梦')
       setTodayState({ status: 'sleeping', log: data.log, streak: todayState.streak })
-    } catch {
-      toast.error('网络错误，请重试')
-    } finally {
-      setSubmitting(false)
-    }
+    } catch { toast.error('网络错误') }
+    finally { setSubmitting(false) }
   }
 
   const handleWakeUp = async () => {
@@ -150,34 +183,60 @@ export default function DormitoryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'wakeup', wake_time: wakeTime }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        toast.error(data.error || '打卡失败')
-        return
-      }
-
+      if (!res.ok) { toast.error(data.error || '打卡失败'); return }
       const points = data.log?.points_earned ?? 0
       toast.success(`早安！新的一天开始了 +${points}积分`)
       setTodayState({ status: 'completed', log: data.log, streak: todayState.streak })
-      // 刷新历史
       const historyRes = await fetch('/api/sleep/today?action=history')
       const historyData = await historyRes.json()
       setHistory(historyData.logs ?? [])
-    } catch {
-      toast.error('网络错误，请重试')
-    } finally {
-      setSubmitting(false)
-    }
+    } catch { toast.error('网络错误') }
+    finally { setSubmitting(false) }
   }
 
-  const handleLeave = useCallback(() => {
-    router.push('/campus')
-  }, [router])
+  const handlePlanCreated = () => {
+    setHasPlan(true)
+    setPlanJustCreated(true)
+    toast.success('规划完成！可以出发去图书馆了')
+  }
+
+  const handleReviewSubmitted = () => {
+    setHasReview(true)
+    toast.success('总结完成！')
+  }
+
+  const handleLeave = useCallback(() => { router.push('/campus') }, [router])
 
   const timeInfo = getTimeMessage(currentTime)
   const currentPoints = calculateSleepPoints(currentTime)
+  const greeting = getGreeting()
+
+  const tabs: { id: DormTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+    {
+      id: 'plan',
+      label: '规划',
+      icon: <ClipboardList className="size-4" />,
+      badge: hasPlan ? '已完成' : '待规划',
+    },
+    {
+      id: 'review',
+      label: '总结',
+      icon: <PenLine className="size-4" />,
+      badge: hasReview ? '已完成' : '待总结',
+    },
+    {
+      id: 'rest',
+      label: '休息',
+      icon: <Coffee className="size-4" />,
+    },
+    {
+      id: 'sleep',
+      label: '睡眠',
+      icon: <Moon className="size-4" />,
+      badge: todayState.status === 'completed' ? '已打卡' : todayState.status === 'sleeping' ? '未起床' : undefined,
+    },
+  ]
 
   if (loading) {
     return (
@@ -188,251 +247,298 @@ export default function DormitoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg min-h-screen bg-[var(--scene-dorm-bg)] animate-scene-fade-in">
+    <div className="mx-auto max-w-lg min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* 进入提示 */}
       {showEntryToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-scene-toast">
-          <div className="bg-[var(--scene-dorm)] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+          <div className="px-4 py-2 rounded-full text-sm font-medium shadow-lg text-white" style={{ backgroundColor: 'var(--scene-dorm)' }}>
             已进入宿舍
           </div>
         </div>
       )}
 
       {/* 顶部氛围区 */}
-      <div className="bg-gradient-to-b from-[var(--scene-dorm)] to-[var(--scene-dorm)] px-4 pt-12 pb-8 text-white">
-        <h1 className="text-2xl font-bold mb-1">🌙 宿舍</h1>
-        <p className="text-white/70 text-sm">{getDormitorySubtitle()}</p>
+      <div className="px-4 pt-12 pb-6" style={{ background: `linear-gradient(to bottom, var(--scene-dorm-bg), var(--bg-primary))` }}>
+        <div className="flex items-center gap-3 mb-1">
+          <span style={{ color: 'var(--scene-dorm)' }}>{greeting.icon}</span>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>宿舍</h1>
+        </div>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{greeting.text}</p>
+
+        {/* 状态概览条 */}
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <Clock className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+            <span className="font-mono font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{currentTime}</span>
+          </div>
+          {todayState.streak > 0 && (
+            <div className="flex items-center gap-1 px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
+              <TrendingUp className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{todayState.streak}天</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 内容区域 */}
-      <div className="px-4 py-4 pb-24 space-y-4">
-        {/* 状态展示区 */}
-        <div className="rounded-xl shadow-sm p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-          <div className="flex flex-col items-center gap-3 py-4">
-            <div className="text-6xl">🌙</div>
-            <div className="text-2xl font-mono font-bold text-[var(--scene-dorm)]">
-              {currentTime}
-            </div>
-            <p
-              className="text-sm font-medium px-3 py-1 rounded-full"
+      {/* Tab 切换 */}
+      <div className="px-4 mb-4">
+        <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg text-xs transition-all"
               style={{
-                backgroundColor: timeInfo.level === 'gold' ? 'var(--success-light)' : timeInfo.level === 'warning' ? 'var(--accent-light)' : 'var(--accent-light)',
-                color: timeInfo.level === 'gold' ? 'var(--success)' : timeInfo.level === 'warning' ? 'var(--accent-color)' : 'var(--danger)',
+                backgroundColor: activeTab === tab.id ? 'var(--bg-card)' : 'transparent',
+                color: activeTab === tab.id ? 'var(--scene-dorm)' : 'var(--text-muted)',
+                boxShadow: activeTab === tab.id ? 'var(--shadow)' : 'none',
               }}
             >
-              {timeInfo.text}
-            </p>
-            {todayState.streak > 0 && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <TrendingUp className="size-4 text-[var(--scene-dorm)]" />
-                连续早睡 {todayState.streak} 天
+              {tab.icon}
+              <span className="font-medium">{tab.label}</span>
+              {tab.badge && (
+                <span
+                  className="text-[10px] px-1.5 rounded-full"
+                  style={{
+                    backgroundColor: tab.badge === '已完成' ? 'color-mix(in srgb, var(--success) 15%, transparent)' : 'color-mix(in srgb, var(--accent-color) 15%, transparent)',
+                    color: tab.badge === '已完成' ? 'var(--success)' : 'var(--accent-color)',
+                  }}
+                >
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab 内容区 */}
+      <div className="px-4 pb-24">
+        {/* ====== 规划 Tab ====== */}
+        {activeTab === 'plan' && (
+          <div className="space-y-4">
+            {hasPlan && !planJustCreated ? (
+              <div className="text-center py-8 space-y-3">
+                <div className="inline-flex size-16 items-center justify-center rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)' }}>
+                  <ClipboardList className="size-8" style={{ color: 'var(--success)' }} />
+                </div>
+                <div>
+                  <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>今日规划已完成</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>准备好的话，出发去图书馆吧</p>
+                </div>
+                <Button
+                  onClick={() => router.push('/campus')}
+                  className="mt-2"
+                  style={{ backgroundColor: 'var(--scene-dorm)', color: 'white' }}
+                >
+                  去校园
+                </Button>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <ClipboardList className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+                  <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {planJustCreated ? '今日规划' : '制定今日规划'}
+                  </h2>
+                </div>
+                <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  在宿舍规划好今天要做什么，然后去图书馆开始学习
+                </p>
+                <PlanForm onSuccess={handlePlanCreated} />
+              </>
             )}
           </div>
-        </div>
+        )}
 
-        {/* 积分规则卡片 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Star className="size-4 text-[var(--scene-dorm)]" />
-              积分规则
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-                  currentPoints === 15
-                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
-                    : 'bg-muted'
-                }`}
-              >
-                <span>22:30 前入睡</span>
-                <span className="font-bold">+15 积分</span>
-              </div>
-              <div
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-                  currentPoints === 8
-                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
-                    : 'bg-muted'
-                }`}
-              >
-                <span>23:00 前入睡</span>
-                <span className="font-bold">+8 积分</span>
-              </div>
-              <div
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-                  currentPoints === 0
-                    ? 'bg-[var(--scene-dorm)]/10 border border-[var(--scene-dorm)]/30 font-semibold text-[var(--scene-dorm)]'
-                    : 'bg-muted'
-                }`}
-              >
-                <span>23:00 后入睡</span>
-                <span className="font-bold">+0 积分</span>
-              </div>
+        {/* ====== 总结 Tab ====== */}
+        {activeTab === 'review' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <PenLine className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+              <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>今日总结</h2>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              回顾今天的表现，记录学习心得
+            </p>
+            <StructuredReview period="daily" periodLabel="日总结" />
+          </div>
+        )}
 
-        {/* 打卡区域 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="size-4 text-[var(--scene-dorm)]" />
-              {todayState.status === 'idle'
-                ? '晚安打卡'
-                : todayState.status === 'sleeping'
-                ? '早安打卡'
-                : '今日已完成打卡'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todayState.status === 'idle' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1.5">
-                    入睡时间
-                  </label>
-                  <input
-                    type="time"
-                    value={sleepTime}
-                    onChange={(e) => setSleepTime(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--scene-dorm)] focus-visible:ring-offset-2"
-                  />
-                </div>
-                <Button
-                  onClick={handleSleepCheckin}
-                  disabled={submitting}
-                  className="w-full bg-[var(--scene-dorm)] hover:bg-[var(--scene-dorm)] text-white"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      打卡中...
-                    </>
-                  ) : (
-                    '晚安打卡'
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {todayState.status === 'sleeping' && todayState.log && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Moon className="size-4 text-[var(--scene-dorm)]" />
-                  昨晚入睡时间：{todayState.log.sleep_time}
-                </div>
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1.5">
-                    起床时间
-                  </label>
-                  <input
-                    type="time"
-                    value={wakeTime}
-                    onChange={(e) => setWakeTime(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--scene-dorm)] focus-visible:ring-offset-2"
-                  />
-                </div>
-                <Button
-                  onClick={handleWakeUp}
-                  disabled={submitting}
-                  className="w-full bg-[var(--scene-dorm)] hover:bg-[var(--scene-dorm)] text-white"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      打卡中...
-                    </>
-                  ) : (
-                    '早安打卡'
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {todayState.status === 'completed' && todayState.log && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">入睡时间</span>
-                  <span className="font-medium">{todayState.log.sleep_time}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">起床时间</span>
-                  <span className="font-medium">{todayState.log.wake_time}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">获得积分</span>
-                  <span className="font-bold text-[var(--scene-dorm)]">
-                    +{todayState.log.points_earned} 积分
-                  </span>
-                </div>
-                <div className="rounded-lg px-3 py-2 text-center text-sm font-medium" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)' }}>
-                  今日已完成打卡
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 历史记录区 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">最近 7 天记录</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {history.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                暂无睡眠记录
+        {/* ====== 休息 Tab ====== */}
+        {activeTab === 'rest' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Coffee className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+              <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>休息一下</h2>
+            </div>
+            <div className="text-center py-12 space-y-4">
+              <div className="text-6xl">☕</div>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                学累了就休息一会儿，不用有压力
               </p>
-            ) : (
-              <div className="space-y-2">
-                {history.map((log) => (
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                休息也是学习的一部分
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ====== 睡眠 Tab ====== */}
+        {activeTab === 'sleep' && (
+          <div className="space-y-4">
+            {/* 时钟和时段提示 */}
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-card)', boxShadow: 'var(--shadow)' }}>
+              <div className="text-5xl mb-2">🌙</div>
+              <div className="text-2xl font-mono font-bold" style={{ color: 'var(--scene-dorm)' }}>
+                {currentTime}
+              </div>
+              <p
+                className="text-sm font-medium px-3 py-1 rounded-full inline-block mt-2"
+                style={{
+                  backgroundColor: timeInfo.level === 'gold' ? 'color-mix(in srgb, var(--success) 15%, transparent)' : timeInfo.level === 'warning' ? 'color-mix(in srgb, var(--accent-color) 15%, transparent)' : 'color-mix(in srgb, var(--danger) 15%, transparent)',
+                  color: timeInfo.level === 'gold' ? 'var(--success)' : timeInfo.level === 'warning' ? 'var(--accent-color)' : 'var(--danger)',
+                }}
+              >
+                {timeInfo.text}
+              </p>
+            </div>
+
+            {/* 积分规则 */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Star className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+                  积分规则
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                {[
+                  { time: '22:30 前', points: 15 },
+                  { time: '23:00 前', points: 8 },
+                  { time: '23:00 后', points: 0 },
+                ].map((rule) => (
                   <div
-                    key={log.id}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 text-sm"
+                    key={rule.time}
+                    className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                    style={{
+                      backgroundColor: currentPoints === rule.points ? 'color-mix(in srgb, var(--scene-dorm) 10%, var(--bg-card))' : 'var(--bg-secondary)',
+                      border: currentPoints === rule.points ? '1px solid color-mix(in srgb, var(--scene-dorm) 30%, transparent)' : '1px solid transparent',
+                      fontWeight: currentPoints === rule.points ? 600 : 400,
+                      color: currentPoints === rule.points ? 'var(--scene-dorm)' : 'var(--text-secondary)',
+                    }}
                   >
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{formatDate(log.log_date)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {log.sleep_time}
-                        {log.wake_time && log.wake_time !== '' ? ` - ${log.wake_time}` : ' (未起床)'}
-                      </span>
+                    <span>{rule.time}入睡</span>
+                    <span className="font-bold">+{rule.points}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* 打卡区域 */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Clock className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+                  {todayState.status === 'idle' ? '晚安打卡' : todayState.status === 'sleeping' ? '早安打卡' : '今日已完成'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {todayState.status === 'idle' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>入睡时间</label>
+                      <input
+                        type="time"
+                        value={sleepTime}
+                        onChange={(e) => setSleepTime(e.target.value)}
+                        className="w-full rounded-lg border px-3 py-2 text-sm"
+                        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+                      />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="size-3.5" style={{ color: 'var(--points-color)' }} />
-                      <span
-                        className="font-bold"
-                        style={{
-                          color: log.points_earned >= 15
-                            ? 'var(--success)'
-                            : log.points_earned >= 8
-                            ? 'var(--accent-color)'
-                            : 'var(--text-muted)',
-                        }}
-                      >
+                    <Button onClick={handleSleepCheckin} disabled={submitting} className="w-full" style={{ backgroundColor: 'var(--scene-dorm)', color: 'white' }}>
+                      {submitting ? <Loader2 className="size-4 animate-spin" /> : '晚安打卡'}
+                    </Button>
+                  </div>
+                )}
+
+                {todayState.status === 'sleeping' && todayState.log && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <Moon className="size-4" style={{ color: 'var(--scene-dorm)' }} />
+                      昨晚入睡：{todayState.log.sleep_time}
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>起床时间</label>
+                      <input
+                        type="time"
+                        value={wakeTime}
+                        onChange={(e) => setWakeTime(e.target.value)}
+                        className="w-full rounded-lg border px-3 py-2 text-sm"
+                        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                    <Button onClick={handleWakeUp} disabled={submitting} className="w-full" style={{ backgroundColor: 'var(--scene-dorm)', color: 'white' }}>
+                      {submitting ? <Loader2 className="size-4 animate-spin" /> : '早安打卡'}
+                    </Button>
+                  </div>
+                )}
+
+                {todayState.status === 'completed' && todayState.log && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: 'var(--text-muted)' }}>入睡</span>
+                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{todayState.log.sleep_time}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: 'var(--text-muted)' }}>起床</span>
+                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{todayState.log.wake_time}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: 'var(--text-muted)' }}>积分</span>
+                      <span className="font-bold" style={{ color: 'var(--scene-dorm)' }}>+{todayState.log.points_earned}</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 历史记录 */}
+            {history.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">最近 7 天</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5">
+                  {history.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      <div>
+                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{formatDate(log.log_date)}</span>
+                        <span className="text-xs ml-2" style={{ color: 'var(--text-muted)' }}>
+                          {log.sleep_time}{log.wake_time && log.wake_time !== '' ? ` - ${log.wake_time}` : ''}
+                        </span>
+                      </div>
+                      <span className="font-bold" style={{ color: log.points_earned >= 15 ? 'var(--success)' : log.points_earned >= 8 ? 'var(--accent-color)' : 'var(--text-muted)' }}>
                         +{log.points_earned}
                       </span>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
 
-      {/* 底部固定离开按钮 */}
+      {/* 底部固定栏 */}
       <div className="fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t px-4 py-3" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)', borderColor: 'var(--border-color)' }}>
         <div className="mx-auto max-w-lg">
           <Button
             variant="outline"
             className="w-full"
-            style={{ color: 'var(--danger)', borderColor: 'var(--border-color)' }}
+            style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
             onClick={handleLeave}
           >
-            <LogOut className="size-4 mr-2" />
             离开宿舍
           </Button>
         </div>

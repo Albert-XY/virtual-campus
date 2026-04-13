@@ -36,14 +36,13 @@ const menuSections = [
     icon: Target,
     items: [
       { label: '学习目标', href: '/goals' },
-      { label: '日规划', href: '/dashboard' },
     ],
   },
   {
     title: '复盘',
     icon: FileText,
     items: [
-      { label: '日总结', href: '/review/daily' },
+      { label: '日总结', href: '/campus/dormitory' },
       { label: '周总结', href: '/review/weekly' },
       { label: '月总结', href: '/review/monthly' },
     ],

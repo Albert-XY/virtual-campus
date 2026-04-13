@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation'
 import {
   ChevronRight,
   Target,
+  ClipboardList,
   FileText,
   Star,
   Bell,
   Settings,
   Palette,
   LogOut,
+  Moon,
 } from 'lucide-react'
 import {
   Sheet,
@@ -30,15 +32,15 @@ interface SidebarProps {
 // 导航菜单定义
 const menuSections = [
   {
-    title: '学习目标',
+    title: '规划',
     icon: Target,
     items: [
-      { label: '目标管理', href: '/goals' },
+      { label: '学习目标', href: '/goals' },
       { label: '日规划', href: '/dashboard' },
     ],
   },
   {
-    title: '总结',
+    title: '复盘',
     icon: FileText,
     items: [
       { label: '日总结', href: '/review/daily' },
@@ -46,6 +48,7 @@ const menuSections = [
       { label: '月总结', href: '/review/monthly' },
     ],
   },
+  { title: '睡眠打卡', icon: Moon, href: '/campus/dormitory' },
   { title: '积分详情', icon: Star, href: '/profile/points' },
   { title: '播报存档', icon: Bell, href: '/broadcasts' },
   { title: '外观设置', icon: Palette, href: '/profile/appearance' },

@@ -358,18 +358,6 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
     return nextTask || null
   }, [tasks, state.completedTasks, getCurrentTask])
 
-  // 完成欢迎
-  const completeWelcome = useCallback(() => {
-    setState(prev => ({ ...prev, hasSeenWelcome: true }))
-    setShowWelcome(false)
-    
-    const firstTask = tasks[0]
-    if (firstTask) {
-      activateTask(firstTask.id)
-      showCharacterDialogue('task_intro', firstTask.id)
-    }
-  }, [tasks])
-
   // 激活任务
   const activateTask = useCallback((taskId: string) => {
     setTasks(prev => prev.map(t => ({
@@ -382,41 +370,6 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
       setState(prev => ({ ...prev, currentTask: task }))
     }
   }, [tasks])
-
-  // 完成任务
-  const completeTask = useCallback((taskId: string) => {
-    const task = tasks.find(t => t.id === taskId)
-    if (!task || task.isCompleted) return
-
-    setTasks(prev => prev.map(t => 
-      t.id === taskId ? { ...t, isCompleted: true, isActive: false } : t
-    ))
-
-    setState(prev => ({
-      ...prev,
-      completedTasks: [...prev.completedTasks, taskId],
-      totalPoints: prev.totalPoints + task.reward
-    }))
-
-    addPoints(task.reward)
-    showCharacterDialogue('task_complete', taskId)
-
-    const allMainTasksCompleted = MAIN_TASKS.every(t => 
-      state.completedTasks.includes(t.id) || t.id === taskId
-    )
-    if (allMainTasksCompleted && !state.unlockedBadges.includes('first-day')) {
-      unlockBadge('first-day')
-      addPoints(50)
-    }
-
-    const nextTask = getNextTask()
-    if (nextTask) {
-      setTimeout(() => {
-        activateTask(nextTask.id)
-        showCharacterDialogue('task_intro', nextTask.id)
-      }, 3000)
-    }
-  }, [tasks, state, addPoints, unlockBadge, getNextTask, activateTask])
 
   // 添加积分
   const addPoints = useCallback((points: number) => {
@@ -469,6 +422,53 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
       setShowDialogue(true)
     }
   }, [])
+
+  // 完成欢迎
+  const completeWelcome = useCallback(() => {
+    setState(prev => ({ ...prev, hasSeenWelcome: true }))
+    setShowWelcome(false)
+    
+    const firstTask = tasks[0]
+    if (firstTask) {
+      activateTask(firstTask.id)
+      showCharacterDialogue('task_intro', firstTask.id)
+    }
+  }, [tasks, activateTask, showCharacterDialogue])
+
+  // 完成任务
+  const completeTask = useCallback((taskId: string) => {
+    const task = tasks.find(t => t.id === taskId)
+    if (!task || task.isCompleted) return
+
+    setTasks(prev => prev.map(t => 
+      t.id === taskId ? { ...t, isCompleted: true, isActive: false } : t
+    ))
+
+    setState(prev => ({
+      ...prev,
+      completedTasks: [...prev.completedTasks, taskId],
+      totalPoints: prev.totalPoints + task.reward
+    }))
+
+    addPoints(task.reward)
+    showCharacterDialogue('task_complete', taskId)
+
+    const allMainTasksCompleted = MAIN_TASKS.every(t => 
+      state.completedTasks.includes(t.id) || t.id === taskId
+    )
+    if (allMainTasksCompleted && !state.unlockedBadges.includes('first-day')) {
+      unlockBadge('first-day')
+      addPoints(50)
+    }
+
+    const nextTask = getNextTask()
+    if (nextTask) {
+      setTimeout(() => {
+        activateTask(nextTask.id)
+        showCharacterDialogue('task_intro', nextTask.id)
+      }, 3000)
+    }
+  }, [tasks, state, addPoints, unlockBadge, getNextTask, activateTask, showCharacterDialogue])
 
   // 重置引导
   const resetOnboarding = useCallback(() => {

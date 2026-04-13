@@ -8,7 +8,7 @@
  * 用户可以调节音量或关闭。
  */
 
-export type AmbientPreset = 'library' | 'dormitory' | 'study-room' | 'cafe' | 'rain' | 'silence'
+export type AmbientPreset = 'library' | 'dormitory' | 'study-room' | 'cafe' | 'rain' | 'silence' | 'lake'
 
 interface AmbientLayer {
   type: 'white' | 'brown' | 'pink'
@@ -39,6 +39,11 @@ const PRESETS: Record<AmbientPreset, AmbientLayer[]> = {
     { type: 'brown', gain: 0.4 },   // 雨声的低频部分
     { type: 'pink', gain: 0.2 },    // 雨声的中频部分
     { type: 'white', gain: 0.08 },  // 雨滴的高频部分
+  ],
+  lake: [
+    { type: 'brown', gain: 0.2 },   // 湖水波动的低频
+    { type: 'pink', gain: 0.1 },    // 湖水的中频
+    { type: 'white', gain: 0.05 },  // 微风的高频
   ],
   silence: [],
 }

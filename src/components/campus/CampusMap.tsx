@@ -78,6 +78,14 @@ const buildings: BuildingDef[] = [
     height: 18,
   },
   {
+    id: 'lake',
+    name: 'LAKE',
+    x: 25,
+    y: 33,
+    width: 50,
+    height: 18,
+  },
+  {
     id: 'exam-center',
     name: 'EXAM CENTER',
     x: 25,
@@ -93,7 +101,10 @@ const buildings: BuildingDef[] = [
 const paths: [string, string][] = [
   ['library', 'study-room'],
   ['library', 'dormitory'],
+  ['library', 'lake'],
   ['study-room', 'dormitory'],
+  ['study-room', 'lake'],
+  ['lake', 'dormitory'],
   ['dormitory', 'exam-center'],
 ]
 

@@ -124,6 +124,7 @@ export default function CampusPage() {
       library: '/campus/library',
       'study-room': '/campus/study-room',
       dormitory: '/campus/dormitory',
+      lake: '/campus/lake',
     }
     const route = routeMap[scene]
     if (route) {

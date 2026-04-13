@@ -40,21 +40,23 @@ interface StructuredContent {
 }
 
 // ============================================================
-// Guided questions per period
+// Guided questions per period (psychology-based)
 // ============================================================
-const PERIOD_QUESTIONS: Record<string, { key: string; label: string; placeholder: string }[]> = {
+const PERIOD_QUESTIONS: Record<string, { key: string; label: string; placeholder: string; required?: boolean }[]> = {
   daily: [
-    { key: 'good_tasks', label: '哪个任务完成得好？为什么？', placeholder: '例如：数学练习全部完成，因为提前预习了知识点...' },
-    { key: 'unfinished_tasks', label: '哪个任务没完成？为什么？', placeholder: '例如：英语阅读没做完，因为时间分配不够...' },
-    { key: 'distractions', label: '今天最大的干扰是什么？', placeholder: '例如：手机通知、午休时间过长...' },
-    { key: 'adjustments', label: '明天怎么调整？', placeholder: '例如：把手机放到另一个房间，提前15分钟开始...' },
+    { key: 'proud_moment', label: '今天最值得肯定的一件事', placeholder: '例如：数学练习全部完成，或者坚持了5个番茄钟...', required: true },
+    { key: 'plan_status', label: '今天的学习计划完成得怎么样？', placeholder: '全部完成 / 大部分完成 / 只完成了一半 / 几乎没完成', required: true },
+    { key: 'biggest_difficulty', label: '今天遇到的最大困难或卡壳点', placeholder: '例如：二次函数的图像变换怎么都搞不懂...', required: true },
+    { key: 'redo_better', label: '如果重新来过，哪件事可以做得更好？', placeholder: '例如：数学应该多留10分钟，英语阅读应该先看题目...', required: false },
+    { key: 'tomorrow_priority', label: '明天最重要的一件事', placeholder: '只写一件最重要的事', required: true },
   ],
   weekly: [
-    { key: 'efficient_days', label: '哪几天效率最高？为什么？', placeholder: '例如：周二和周四效率最高，因为那两天没有课外班...' },
-    { key: 'time_subjects', label: '哪些科目花费时间最多？', placeholder: '例如：数学和物理花的时间最多...' },
-    { key: 'biggest_gain', label: '本周最大的收获', placeholder: '例如：掌握了二次函数的图像变换...' },
-    { key: 'improvements', label: '需要改进的地方', placeholder: '例如：晚上学习容易犯困，需要调整作息...' },
-    { key: 'next_week_plan', label: '下周计划调整', placeholder: '例如：增加英语听力练习时间...' },
+    { key: 'week_proud', label: '这周最让我自豪的一件事', placeholder: '例如：坚持了5天复盘，或者数学进度提前完成了...' },
+    { key: 'goal_status', label: '这周的学习目标完成得怎么样？', placeholder: '对照周目标，评估完成情况...' },
+    { key: 'recurring_problem', label: '这周反复出现的一个问题', placeholder: '例如：每天晚上学习效率都很低，或者数学总是超时...' },
+    { key: 'best_method', label: '这周学到的最有用的一个方法', placeholder: '例如：先看例题再做练习，效率提高了很多...' },
+    { key: 'kiss_review', label: '应该继续做 / 停止做 / 开始做什么？', placeholder: '继续：每天背单词 | 停止：睡前刷手机 | 开始：错题归因分析...' },
+    { key: 'next_week_focus', label: '下周的1-2个重点目标', placeholder: '不超过2个，聚焦最重要的事...' },
   ],
   monthly: [
     { key: 'overall_feeling', label: '这个月整体感受如何？', placeholder: '例如：整体节奏不错，但中间有一周比较懈怠...' },
@@ -151,6 +153,13 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
     streakDays: number
   } | null>(null)
 
+  // Summary stats (pomodoros, tasks, deviation)
+  const [summary, setSummary] = useState<{
+    today: { total_pomodoros: number; total_focus_minutes: number; tasks_completed: number; tasks_total: number; deviation_rate: number }
+    yesterday: { total_pomodoros: number; total_focus_minutes: number; tasks_completed: number; tasks_total: number; deviation_rate: number } | null
+    streak: { consecutive_review_days: number }
+  } | null>(null)
+
   // Dynamic questions based on context
   const getDynamicQuestions = () => {
     const baseQuestions = PERIOD_QUESTIONS[period] || []
@@ -227,6 +236,14 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
       fetch('/api/insights?type=review_context')
         .then(res => res.ok ? res.json() : null)
         .then(data => { if (data) setReviewContext(data) })
+        .catch(() => {})
+
+      // Fetch summary stats
+      const summaryParams = new URLSearchParams({ period: 'daily' })
+      if (dateStr) summaryParams.set('date', dateStr)
+      fetch(`/api/reviews/summary?${summaryParams}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data) setSummary(data) })
         .catch(() => {})
     }
   }, [period, dateStr])
@@ -557,6 +574,51 @@ export default function StructuredReview({ period, periodLabel, dateStr }: Struc
               </div>
             </CardContent>
           </Card>
+
+          {/* 今日数据摘要（日复盘） */}
+          {period === 'daily' && summary && !showSubmitted && (
+            <Card>
+              <CardContent className="pt-5">
+                <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  📊 今天的数据
+                </h3>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold" style={{ color: 'var(--accent-color)' }}>
+                      {summary.today.total_pomodoros}
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>番茄钟</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold" style={{
+                      color: summary.today.tasks_total > 0 && summary.today.tasks_completed === summary.today.tasks_total
+                        ? 'var(--success)' : 'var(--text-primary)'
+                    }}>
+                      {summary.today.tasks_completed}/{summary.today.tasks_total}
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>任务完成</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold" style={{
+                      color: summary.today.deviation_rate > 30 ? 'var(--danger)' : summary.today.deviation_rate <= 15 ? 'var(--success)' : 'var(--text-primary)'
+                    }}>
+                      {summary.today.deviation_rate}%
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>偏差率</p>
+                  </div>
+                </div>
+                {summary.yesterday && (
+                  <div className="flex items-center justify-center gap-4 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    <span>昨天 {summary.yesterday.total_pomodoros} 个番茄钟</span>
+                    <span>·</span>
+                    <span>任务 {summary.yesterday.tasks_completed}/{summary.yesterday.tasks_total}</span>
+                    <span>·</span>
+                    <span>偏差率 {summary.yesterday.deviation_rate}%</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* 数据洞察（仅日总结且有上下文数据时显示） */}
           {period === 'daily' && reviewContext && !showSubmitted && (

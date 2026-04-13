@@ -795,6 +795,334 @@
 }
 
 /* ============================================================
+   Star Citizen: Component-Level Adaptations
+   ============================================================ */
+
+/* Cards: holographic panels with glow */
+[data-theme="star-citizen"] [data-slot="card"],
+[data-theme="star-citizen"] .card,
+[data-theme="star-citizen"] [class*="Card"] {
+  background: rgba(0, 30, 60, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 153, 221, 0.25);
+  box-shadow: 
+    0 0 20px rgba(0, 153, 221, 0.08),
+    inset 0 1px 0 rgba(0, 153, 221, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Card corner accents */
+[data-theme="star-citizen"] [data-slot="card"]::before,
+[data-theme="star-citizen"] [data-slot="card"]::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(0, 153, 221, 0.5);
+  border-style: solid;
+  pointer-events: none;
+}
+
+[data-theme="star-citizen"] [data-slot="card"]::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+[data-theme="star-citizen"] [data-slot="card"]::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Buttons: glowing action buttons */
+[data-theme="star-citizen"] button,
+[data-theme="star-citizen"] [role="button"] {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  border: 1px solid rgba(0, 153, 221, 0.4);
+  background: rgba(0, 60, 100, 0.3);
+  transition: all 0.2s ease;
+}
+
+[data-theme="star-citizen"] button:hover,
+[data-theme="star-citizen"] [role="button"]:hover {
+  background: rgba(0, 153, 221, 0.2);
+  border-color: rgba(0, 153, 221, 0.7);
+  box-shadow: 0 0 15px rgba(0, 153, 221, 0.3);
+}
+
+[data-theme="star-citizen"] button:active,
+[data-theme="star-citizen"] [role="button"]:active {
+  background: rgba(0, 153, 221, 0.3);
+  box-shadow: 0 0 20px rgba(0, 153, 221, 0.5);
+}
+
+/* Primary buttons: full glow */
+[data-theme="star-citizen"] button[class*="primary"],
+[data-theme="star-citizen"] button[style*="accent-color"] {
+  background: linear-gradient(180deg, rgba(0, 153, 221, 0.4) 0%, rgba(0, 100, 150, 0.4) 100%);
+  border-color: rgba(0, 153, 221, 0.6);
+  box-shadow: 0 0 10px rgba(0, 153, 221, 0.3);
+}
+
+/* Badges: holographic tags */
+[data-theme="star-citizen"] [data-slot="badge"],
+[data-theme="star-citizen"] [class*="Badge"] {
+  background: rgba(0, 153, 221, 0.15);
+  border: 1px solid rgba(0, 153, 221, 0.3);
+  color: #0099DD;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Inputs: terminal-style */
+[data-theme="star-citizen"] input,
+[data-theme="star-citizen"] textarea,
+[data-theme="star-citizen"] select {
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid rgba(0, 153, 221, 0.3);
+  color: #AACCEE;
+  font-family: 'Share Tech Mono', monospace;
+  caret-color: #0099DD;
+}
+
+[data-theme="star-citizen"] input:focus,
+[data-theme="star-citizen"] textarea:focus {
+  border-color: rgba(0, 153, 221, 0.6);
+  box-shadow: 0 0 10px rgba(0, 153, 221, 0.2);
+  outline: none;
+}
+
+[data-theme="star-citizen"] input::placeholder,
+[data-theme="star-citizen"] textarea::placeholder {
+  color: rgba(102, 153, 187, 0.6);
+}
+
+/* Progress bars: energy meter */
+[data-theme="star-citizen"] [class*="Progress"] > div {
+  background: linear-gradient(90deg, #0099DD, #00DDEE);
+  box-shadow: 0 0 8px rgba(0, 153, 221, 0.5);
+}
+
+/* Dividers: scan line */
+[data-theme="star-citizen"] hr,
+[data-theme="star-citizen"] [class*="Separator"] {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 153, 221, 0.4), transparent);
+}
+
+/* Scrollbar: holographic */
+[data-theme="star-citizen"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-theme="star-citizen"] ::-webkit-scrollbar-track {
+  background: rgba(0, 20, 40, 0.5);
+}
+
+[data-theme="star-citizen"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 153, 221, 0.4);
+  border-radius: 3px;
+}
+
+[data-theme="star-citizen"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 153, 221, 0.6);
+}
+
+/* ============================================================
+   Mirror's Edge: Component-Level Adaptations
+   ============================================================ */
+
+/* Cards: stark white with red accents */
+[data-theme="mirrors-edge"] [data-slot="card"],
+[data-theme="mirrors-edge"] .card,
+[data-theme="mirrors-edge"] [class*="Card"] {
+  background: #FFFFFF;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.06);
+  border-radius: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-theme="mirrors-edge"] [data-slot="card"]:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.08);
+}
+
+/* Primary cards: runner vision highlight */
+[data-theme="mirrors-edge"] [data-slot="card"][class*="primary"],
+[data-theme="mirrors-edge"] .runner-vision-card {
+  border-color: #E8302A;
+  box-shadow: 4px 4px 0px rgba(232, 48, 42, 0.15);
+}
+
+/* Buttons: bold geometric */
+[data-theme="mirrors-edge"] button,
+[data-theme="mirrors-edge"] [role="button"] {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border-radius: 0;
+  border: 2px solid transparent;
+  transition: all 0.1s ease;
+}
+
+[data-theme="mirrors-edge"] button:hover {
+  transform: translateY(-1px);
+}
+
+[data-theme="mirrors-edge"] button:active {
+  transform: translateY(1px);
+}
+
+/* Primary buttons: runner red */
+[data-theme="mirrors-edge"] button[class*="primary"],
+[data-theme="mirrors-edge"] button[style*="accent-color"] {
+  background: #E8302A;
+  color: #FFFFFF;
+  box-shadow: 4px 4px 0px rgba(232, 48, 42, 0.2);
+}
+
+[data-theme="mirrors-edge"] button[class*="primary"]:hover {
+  background: #FF4444;
+  box-shadow: 6px 6px 0px rgba(232, 48, 42, 0.25);
+}
+
+/* Outline buttons: bold border */
+[data-theme="mirrors-edge"] button[class*="outline"] {
+  background: transparent;
+  border: 2px solid #1A1A1A;
+  color: #1A1A1A;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="mirrors-edge"] button[class*="outline"]:hover {
+  background: #1A1A1A;
+  color: #FFFFFF;
+}
+
+/* Badges: minimal tags */
+[data-theme="mirrors-edge"] [data-slot="badge"],
+[data-theme="mirrors-edge"] [class*="Badge"] {
+  background: #F5F5F5;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1A1A1A;
+  font-weight: 600;
+  border-radius: 0;
+  font-size: 0.75rem;
+}
+
+/* Primary badges: runner red */
+[data-theme="mirrors-edge"] [data-slot="badge"][class*="primary"],
+[data-theme="mirrors-edge"] [style*="accent-color"][class*="badge"],
+[data-theme="mirrors-edge"] [style*="E8302A"] {
+  background: #E8302A;
+  color: #FFFFFF;
+  border-color: #E8302A;
+}
+
+/* Inputs: clean minimal */
+[data-theme="mirrors-edge"] input,
+[data-theme="mirrors-edge"] textarea,
+[data-theme="mirrors-edge"] select {
+  background: #FFFFFF;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: #1A1A1A;
+  font-family: 'Inter', sans-serif;
+  border-radius: 0;
+}
+
+[data-theme="mirrors-edge"] input:focus,
+[data-theme="mirrors-edge"] textarea:focus {
+  border-color: #E8302A;
+  outline: none;
+  box-shadow: 3px 3px 0px rgba(232, 48, 42, 0.1);
+}
+
+[data-theme="mirrors-edge"] input::placeholder,
+[data-theme="mirrors-edge"] textarea::placeholder {
+  color: #999999;
+  font-weight: 400;
+}
+
+/* Progress bars: bold solid */
+[data-theme="mirrors-edge"] [class*="Progress"] {
+  background: #E8E8E8;
+  border-radius: 0;
+  height: 8px;
+}
+
+[data-theme="mirrors-edge"] [class*="Progress"] > div {
+  background: #E8302A;
+  border-radius: 0;
+}
+
+/* Dividers: solid black line */
+[data-theme="mirrors-edge"] hr,
+[data-theme="mirrors-edge"] [class*="Separator"] {
+  border: none;
+  height: 2px;
+  background: #1A1A1A;
+  opacity: 0.1;
+}
+
+/* Tabs: bold geometric */
+[data-theme="mirrors-edge"] [role="tablist"] {
+  border-bottom: 2px solid #1A1A1A;
+}
+
+[data-theme="mirrors-edge"] [role="tab"] {
+  border-radius: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme="mirrors-edge"] [role="tab"][aria-selected="true"] {
+  background: #E8302A;
+  color: #FFFFFF;
+}
+
+/* Scrollbar: minimal */
+[data-theme="mirrors-edge"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="mirrors-edge"] ::-webkit-scrollbar-track {
+  background: #F5F5F5;
+}
+
+[data-theme="mirrors-edge"] ::-webkit-scrollbar-thumb {
+  background: #CCCCCC;
+  border-radius: 0;
+}
+
+[data-theme="mirrors-edge"] ::-webkit-scrollbar-thumb:hover {
+  background: #E8302A;
+}
+
+/* Links: runner red underline */
+[data-theme="mirrors-edge"] a {
+  color: #E8302A;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.1s ease;
+}
+
+[data-theme="mirrors-edge"] a:hover {
+  border-bottom-color: #E8302A;
+}
+
+/* ============================================================
    Scene fade-in animation
    ============================================================ */
 @keyframes sceneFadeIn {

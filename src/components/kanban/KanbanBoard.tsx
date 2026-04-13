@@ -4,11 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Star, Target } from 'lucide-react'
+import { Loader2, Star, Target, ChevronRight } from 'lucide-react'
 import TaskList from './TaskList'
 import PlanVsActual from './PlanVsActual'
 import TodoSection from './TodoSection'
-import QuickPlan from './QuickPlan'
 import NextStepIndicator from './NextStepIndicator'
 import ContextNudge from './ContextNudge'
 import MilestoneBar from './MilestoneBar'
@@ -135,10 +134,6 @@ export default function KanbanBoard() {
   const [data, setData] = useState<KanbanData | null>(null)
   const [nickname, setNickname] = useState('')
 
-  // Quick plan state
-  const [quickPlanning, setQuickPlanning] = useState(false)
-  const [copying, setCopying] = useState(false)
-
   // Fetch kanban data
   const fetchData = useCallback(async () => {
     try {
@@ -197,85 +192,6 @@ export default function KanbanBoard() {
   }, [fetchData])
 
   // Quick plan handler
-  const handleQuickPlan = async () => {
-    setQuickPlanning(true)
-    try {
-      const res = await fetch('/api/plan?action=quick', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
-      const json = await res.json()
-
-      if (!res.ok) {
-        toast.error(json.error || '快速规划失败')
-        return
-      }
-
-      toast.success('规划创建成功！')
-
-      // 获取规划洞察
-      try {
-        const insightRes = await fetch('/api/insights?type=plan_create')
-        if (insightRes.ok) {
-          const { insights } = await insightRes.json()
-          if (insights.length > 0) {
-            setTimeout(() => {
-              insights.forEach((text: string, i: number) => {
-                setTimeout(() => toast.info(text), i * 800)
-              })
-            }, 600)
-          }
-        }
-      } catch {
-        // 洞察获取失败不影响主流程
-      }
-
-      await fetchData()
-    } catch {
-      toast.error('网络错误，请重试')
-    } finally {
-      setQuickPlanning(false)
-    }
-  }
-
-  // Copy yesterday's plan handler
-  const handleCopyYesterday = async () => {
-    if (!data?.yesterday_plan) return
-
-    setCopying(true)
-    try {
-      const yesterdayPlan = data.yesterday_plan as {
-        study_blocks: unknown[]
-        rest_blocks: unknown[]
-        tasks: unknown[]
-      }
-
-      const res = await fetch('/api/plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          study_blocks: yesterdayPlan.study_blocks,
-          rest_blocks: yesterdayPlan.rest_blocks,
-          tasks: yesterdayPlan.tasks,
-        }),
-      })
-      const json = await res.json()
-
-      if (!res.ok) {
-        toast.error(json.error || '复制规划失败')
-        return
-      }
-
-      toast.success('已复制昨天的规划！')
-      await fetchData()
-    } catch {
-      toast.error('网络错误，请重试')
-    } finally {
-      setCopying(false)
-    }
-  }
-
   // Leave scene handler
   const handleLeaveScene = async () => {
     if (!data?.active_scene) return
@@ -366,7 +282,7 @@ export default function KanbanBoard() {
         streakDays={data.todo_items.streak_days}
         hasMonthlyGoal={data.has_monthly_goal}
         hasWeeklyGoal={data.has_weekly_goal}
-        onQuickPlan={handleQuickPlan}
+        onQuickPlan={() => { window.location.href = '/campus/dormitory' }}
         onOpenScene={() => {}}
       />
 
@@ -383,16 +299,30 @@ export default function KanbanBoard() {
         todayPoints={data.today_points}
       />
 
-      {/* No plan state */}
+      {/* No plan state — 引导去宿舍规划 */}
       {!data.has_plan && (
-        <QuickPlan
-          hasYesterdayPlan={!!data.yesterday_plan}
-          onQuickPlan={handleQuickPlan}
-          onCopyYesterday={handleCopyYesterday}
-          quickPlanning={quickPlanning}
-          copying={copying}
-          hasGoal={data.has_monthly_goal || data.has_weekly_goal}
-        />
+        <div
+          className="rounded-xl p-5 text-center"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            boxShadow: 'var(--shadow)',
+            border: '1px solid var(--border-color)',
+          }}
+        >
+          <div className="text-3xl mb-2">🏠</div>
+          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>今天还没规划</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            去宿舍规划一下今天要做什么
+          </p>
+          <Link
+            href="/campus/dormitory"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-white transition-all active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent-color)' }}
+          >
+            去宿舍
+            <ChevronRight className="size-4" />
+          </Link>
+        </div>
       )}
 
       {/* Has plan state */}

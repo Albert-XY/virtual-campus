@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Noto_Sans_JP, Noto_Serif_JP, Outfit, DM_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import OnboardingWrapper from "@/components/OnboardingWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -108,8 +109,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background text-foreground">
         <ThemeProvider>
-          {children}
-          <Toaster position="top-center" richColors />
+          <OnboardingWrapper>
+            {children}
+            <Toaster position="top-center" richColors />
+          </OnboardingWrapper>
         </ThemeProvider>
       </body>
     </html>
